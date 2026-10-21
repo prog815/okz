@@ -1,0 +1,127 @@
+name: Daily OKZ Update
+
+on:
+  schedule:
+    # 21:00 UTC = 00:00 МСК. Слоты: ОКВЭД2 05:00 / ОКПД2 11:30 / ОКТМО 12:00 / ОКЕИ 13:00 / ОКАТО 14:00 / ОКОГУ 15:00 / ОКОПФ 16:00 / ОКФС 17:00 / ОКВ 18:00 / ОКСМ 19:00 / ОКОФ 20:00 / ОКЗ 21:00
+    - cron: '0 21 * * *'
+  workflow_dispatch:          # ручной запуск
+
+jobs:
+  sync-and-trigger:
+    runs-on: ubuntu-24.04     # пин образа: убирает notice про миграцию ubuntu-latest -> 26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write         # встроенный токен Actions для коммита
+    env:
+      # API-токен Kaggle НОВОГО образца (CLI >= 1.8.0).
+      # В репозитории секрет называется KAGGLE_API_TOKEN_OKZ, внутри него чистый токен.
+      # В Kaggle токен называется gha-okz.
+      # Kaggle CLI читает переменную окружения KAGGLE_API_TOKEN напрямую.
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN_OKZ }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Kaggle CLI с поддержкой API-токенов (>= 1.8.0)
+        run: |
+          pip install -q --upgrade kaggle
+          kaggle --version
+          python - <<'EOF'
+          import re, subprocess
+          out = subprocess.check_output(["kaggle", "--version"], text=True).strip()
+          m = re.search(r"(\d+)\.(\d+)", out)
+          assert m and tuple(map(int, m.groups())) >= (1, 8), \
+              f"нужен kaggle CLI >= 1.8.0 для API-токенов, получен: {out}"
+          print("OK: kaggle CLI поддерживает API-токены")
+          EOF
+
+      - name: Download latest kernel output
+        run: |
+          mkdir -p ./output
+          kaggle kernels output eavprog/okz-classifier-downloader -p ./output
+          echo "Содержимое output:"
+          find ./output -maxdepth 4 -type f | head -30
+          echo ""
+          echo "--- Диагностика тетрадки (если есть) ---"
+          for f in ./output/okz_data/diag/okz_diagnostics.json ./output/*.log ./output/*.txt ./output/__notebook*.ipynb; do
+            [ -f "$f" ] && { echo ">>> $f (last 50 lines) >>>"; tail -n 50 "$f"; echo "<<< $f <<<"; echo ""; }
+          done || true
+
+      - name: Copy web files to repo root (авто-детект SRC, не падает, ставит флаг)
+        id: copy
+        run: |
+          # ВАЖНО ПРО ОКЗ:
+          # Тетрадка ОКЗ пишет публикуемые артефакты в конвенционный подпуть
+          # /kaggle/working/okz_data/web/ (как ОКОФ/ОКОПФ/ОКФС/ОКАТО/ОКТМО/ОКОГУ/ОКСМ),
+          # а НЕ в голый /kaggle/working/web/ (как ОКВ). Поэтому основным кандидатом
+          # SRC является ./output/okz_data/web. Авто-детект по списку кандидатов
+          # оставлен только для устойчивости на случай будущего патча тетрадки;
+          # ГОЛЫЙ ./output как SRC НЕ используется НИКОГДА (грабли ОКЕИ v1.2).
+          #
+          # Кандидаты (первым — конвенционный путь ОКЗ):
+          #   1) ./output/okz_data/web  <- текущее состояние тетрадки ОКЗ
+          #   2) ./output/web           <- фолбэк, если тетрадку когда-то перепатчат
+          # Маркер правильного каталога - наличие okz.json.
+          SRC=""
+          for cand in ./output/okz_data/web ./output/web; do
+            if [ -f "$cand/okz.json" ]; then SRC="$cand"; break; fi
+          done
+
+          if [ -z "$SRC" ]; then
+            echo "::warning::не найден каталог с okz.json ни в ./output/okz_data/web, ни в ./output/web (тетрадка, вероятно, упала на critical или писала не туда)"
+            echo "--- дерево ./output для отладки пути ---"
+            find ./output -type f 2>/dev/null | head -60 || true
+            echo "FILES_OK=false" >> "$GITHUB_ENV"
+          else
+            echo "SRC=$SRC"
+            MISSING=0
+            for f in okz.json okz.json.gz okz_meta.json okz_meta.json.gz; do
+              if [ -f "$SRC/$f" ]; then
+                cp "$SRC/$f" "./$f"
+                echo "copied $f"
+              else
+                echo "::warning::MISSING $f в $SRC"
+                MISSING=$((MISSING+1))
+              fi
+            done
+            if [ "$MISSING" -gt 0 ]; then
+              echo "Отсутствует $MISSING из 4 файлов - коммит пропущен, сайт остаётся на последней хорошей версии"
+              echo "FILES_OK=false" >> "$GITHUB_ENV"
+            else
+              echo "Все 4 файла на месте"
+              echo "FILES_OK=true" >> "$GITHUB_ENV"
+              echo "--- okz_meta.json (редакция / warnings / critical) ---"
+              python -m json.tool okz_meta.json || cat okz_meta.json
+            fi
+          fi
+
+      - name: Commit and push changes
+        if: env.FILES_OK == 'true'
+        run: |
+          git config --local user.email "github-actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add okz.json okz.json.gz okz_meta.json okz_meta.json.gz
+          if git diff --cached --quiet; then
+            echo "Изменений нет - данные уже актуальны"
+          else
+            # ОКЗ: в мете ЕСТЬ стабильное поле source_date (= editorial_effective_date,
+            # для текущего снимка 2021-03-01). Читаем его первым, далее фолбэки
+            # effective_date -> generated_at -> '?'. Однострочный python -c (БЕЗ heredoc!) -
+            # heredoc внутри $() в run:| ломает терминатор из-за отступов YAML и даёт
+            # exit 2. Не менять на heredoc.
+            SOURCE_DATE=$(python -c "import json; m=json.load(open('okz_meta.json')); print(m.get('source_date') or m.get('effective_date') or m.get('generated_at') or '?')" 2>/dev/null || echo '?')
+            git commit -m "Auto-update: OKZ data from kernel output (source $SOURCE_DATE) [skip ci]"
+            git push
+            echo "Изменения запушены"
+          fi
+
+      - name: Trigger new notebook run (fire-and-forget, всегда)
+        if: always()
+        run: |
+          mkdir -p ./nb
+          kaggle kernels pull eavprog/okz-classifier-downloader -p ./nb --metadata
+          kaggle kernels push -p ./nb
+          echo "Тетрадка перезапущена (round-trip); workflow не ждёт её завершения"
