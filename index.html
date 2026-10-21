@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ОКЗ — Общероссийский классификатор занятий</title>
+<meta name="description" content="Поиск по ОКЗ: код занятия (с КЧ и без), наименование, раздел. Иерархический справочник занятий (ОК 010-2014). Источник — машиночитаемый снимок.">
+<meta name="theme-color" content="#f0f4f8">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
+<style>
+  :root{
+    --bg:#f0f4f8; --panel:#ffffff; --text:#1a202c; --muted:#4a5568;
+    --line:#e2e8f0; --line-strong:#cbd5e0;
+    --accent:#2c5282; --accent-weak:#ebf4ff; --accent-text:#2b6cb0;
+    --mark:#fefcbf; --danger:#c53030;
+    --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.05);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --radius:12px;
+
+    /* Роли */
+    --code:#2c5282;   --code-bg:#ebf4ff;   --code-fg:#1a365d;
+    --kch:#718096;    --kch-bg:#edf2f7;    --kch-fg:#2d3748;
+    --root:#2f855a;   --root-bg:#f0fff4;   --root-fg:#22543d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.45;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--accent-text)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+  /* header */
+  .hero{padding:18px 0 6px}
+  .hero h1{margin:0 0 4px;font-size:30px;letter-spacing:.2px}
+  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:940px}
+  .hero p b{color:var(--text);font-weight:600}
+  .notice{
+    margin:12px 0 2px;padding:10px 14px;border:1px solid var(--line-strong);
+    border-left:5px solid var(--accent);border-radius:10px;background:var(--panel);
+    color:var(--text);font-size:13.5px;box-shadow:var(--shadow);
+  }
+  .notice b{font-weight:600}
+  .notice a{white-space:nowrap}
+  .hints{margin:10px 0 0;color:var(--muted);font-size:13px}
+  .hints .mono{font-family:var(--mono);letter-spacing:.3px}
+
+  /* sticky search panel */
+  .panel{
+    position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);
+    backdrop-filter:saturate(1.1) blur(6px);
+    border-bottom:1px solid var(--line);padding:12px 0;margin-top:0;
+  }
+  .panel .wrap{display:flex;flex-direction:column;gap:10px}
+  .row1{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .searchbox{position:relative;flex:1 1 300px;min-width:220px}
+  #q{
+    width:100%;padding:11px 38px 11px 13px;border:1px solid var(--line-strong);
+    border-radius:10px;font-size:15px;background:var(--panel);color:var(--text);
+  }
+  #q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+  #q::-webkit-search-cancel-button{display:none;-webkit-appearance:none}
+  .clear{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    border:none;background:transparent;color:var(--muted);font-size:18px;line-height:1;
+    cursor:pointer;padding:4px 6px;border-radius:8px;display:none;
+  }
+  .clear:hover{background:var(--accent-weak);color:var(--accent-text)}
+  .searchbox.has-val .clear{display:block}
+
+  select.filters{
+    padding:11px 14px;border:1px solid var(--line-strong);border-radius:10px;
+    font-size:14px;background:var(--panel);color:var(--text);cursor:pointer;
+    flex:0 1 auto; outline:none; max-width: 100%;
+  }
+  select.filters:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+
+  /* status line */
+  .statusline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;
+    color:var(--muted);font-size:13px;padding:2px 2px 0}
+  .statusline .found b{color:var(--text)}
+  .statusline .date{white-space:nowrap;text-align:right;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+
+  /* results */
+  main{padding:14px 0 30px}
+  #state{padding:30px 4px;color:var(--muted);text-align:center}
+  #state.error{color:var(--danger)}
+  #state .retry{margin-top:10px;display:inline-block;padding:9px 14px;border:1px solid var(--line-strong);
+    border-radius:10px;background:var(--panel);color:var(--accent-text);cursor:pointer;font:inherit}
+  #list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  .empty{padding:26px 4px;color:var(--muted);text-align:center}
+
+  /* card */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--accent);
+    border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);
+    transition: border-left-color 0.2s;
+  }
+  .card.lvl-1 { border-left-color: #2b6cb0; } /* Раздел */
+  .card.lvl-2 { border-left-color: #3182ce; } /* Подгруппа */
+  .card.lvl-3 { border-left-color: #4299e1; } /* Малая */
+  .card.lvl-4 { border-left-color: #63b3ed; } /* Начальная */
+
+  .card.highlight{outline:3px solid var(--accent);outline-offset:2px}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  
+  .code, .kch-badge {
+    font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.4px;
+    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
+    transition:all 0.15s;
+  }
+  .code{background:var(--code-bg);color:var(--code-fg);font-size:15px}
+  .code:hover{border-color:var(--code);background:#dbeafe}
+  .kch-badge{background:var(--kch-bg);color:var(--kch-fg);font-size:12px;font-weight:500}
+  .kch-badge:hover{border-color:var(--kch);background:#e2e8f0}
+
+  .badge-lvl {
+    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;
+    background:#edf2f7;color:#4a5568;white-space:nowrap;
+  }
+  .badge-root{
+    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;
+    border:1px solid transparent;white-space:nowrap;
+    background:var(--root-bg);color:var(--root-fg);
+    transition:all 0.15s;
+  }
+  .badge-root:hover{border-color:var(--root);background:#c6f6d5}
+  
+  .copy-full{
+    margin-left:auto;border:1px dashed var(--line-strong);background:#f7fafc;color:var(--muted);
+    border-radius:8px;padding:4px 9px;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap;
+  }
+  .copy-full:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-weak)}
+  
+  .name{margin-top:9px;font-size:15.5px;font-weight:650;word-break:break-word}
+  mark{background:var(--mark);border-radius:3px;padding:0 1px;color:inherit}
+
+  .path{
+    margin-top:8px; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
+  .path-btn{
+    background:none; border:none; padding:0; font:inherit; color:var(--accent-text);
+    text-decoration:underline; cursor:pointer; text-decoration-style:dotted;
+  }
+  .path-btn:hover{color:var(--accent)}
+
+  .more{display:flex;justify-content:center;margin:16px 0 4px}
+  .more button{
+    padding:11px 18px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);
+    color:var(--accent-text);font:inherit;font-size:14px;cursor:pointer;box-shadow:var(--shadow);
+  }
+  .more button:hover{border-color:var(--accent);background:var(--accent-weak)}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);background:var(--panel)}
+  footer .wrap{padding:18px 16px 30px;color:var(--muted);font-size:14px}
+  footer h4{margin:0 0 8px;color:var(--text);font-size:15px}
+  footer .lead{margin:0 0 12px;color:var(--text)}
+  footer .lead b{font-weight:600}
+  footer .links{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 0 10px}
+  footer .links .cap{color:var(--muted)}
+  footer .links a{white-space:nowrap}
+  footer .disc{margin:10px 0 0;font-size:13px;color:#718096;line-height: 1.5;}
+
+  /* floating buttons + toast */
+  .fab{position:fixed;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
+  .fab.up{bottom:74px}.fab.down{bottom:16px}
+  .fab button{
+    width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--panel);
+    color:var(--accent-text);font-size:18px;cursor:pointer;box-shadow:var(--shadow);display:none;
+  }
+  .fab button:hover{background:var(--accent-weak);border-color:var(--accent)}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+    background:#1a202c;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60;
+    max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:720px){
+    .hero h1{font-size:25px}
+    .row1{flex-direction:column;align-items:stretch}
+    .row1>*{width:100%}
+    .searchbox{flex:auto}
+    select.filters{width:100%;flex:auto; margin-bottom:6px;}
+    .statusline{flex-direction:column;gap:2px}
+    .statusline .date{text-align:left}
+    .copy-full{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<!-- Версия каталога после добавления ОКЗ — ?v=2.9.0. -->
+<script src="https://prog815.github.io/common-menu/menu.js?v=2.9.0"></script>
+<common-projects-menu></common-projects-menu>
+
+<div class="wrap hero">
+  <h1>ОКЗ</h1>
+  <p>Общероссийский классификатор занятий (ОК 010-2014).
+     Поиск по <b>коду</b> (с КЧ и без) и <b>наименованию</b>.
+     Иерархический справочник с группировкой по <b>10 основным группам</b>.</p>
+
+  <div class="notice">
+    <b>ОКЗ — это код занятия (профессии).</b>
+    Для поиска по видам экономической деятельности используйте
+    <a href="https://prog815.github.io/okved2/">ОКВЭД2</a>.
+  </div>
+
+  <div class="hints">
+    Форматы запроса: <span class="mono">2512</span> ·
+    <span class="mono">2512 1</span> ·
+    слово из наименования.
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="wrap">
+    <div class="row1">
+      <div class="searchbox" id="searchbox">
+        <input id="q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Код (например, 2512) или название"
+               aria-label="Поиск по ОКЗ">
+        <button class="clear" id="clear" type="button" title="Очистить запрос" aria-label="Очистить запрос">×</button>
+      </div>
+      <select id="root-filter" class="filters" aria-label="Фильтр по основному разделу">
+        <option value="">Все разделы</option>
+        <!-- Заполняется JS -->
+      </select>
+      <select id="level-filter" class="filters" aria-label="Фильтр по уровню">
+        <option value="">Все уровни</option>
+        <option value="1">1 — Раздел</option>
+        <option value="2">2 — Подгруппа</option>
+        <option value="3">3 — Малая группа</option>
+        <option value="4">4 — Начальная группа</option>
+      </select>
+    </div>
+    <div class="statusline">
+      <div class="found" id="found">Загрузка…</div>
+      <div class="date" id="dateLine"></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="listView">
+    <div id="state">Загрузка данных справочника…</div>
+    <ul id="list" hidden></ul>
+    <div class="more" id="moreWrap" hidden>
+      <button id="more" type="button">Показать ещё</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h4>О справочнике</h4>
+    <p class="lead" id="footLead"></p>
+    <div class="links">
+      <span class="cap">Источник данных (машиночитаемый снимок):</span>
+      <a href="https://classifikators.ru/okz" rel="noopener" target="_blank">classifikators.ru — ОКЗ</a>
+    </div>
+    <div class="links" id="footSources">
+      <span class="cap">Текстовые редакции для сверки:</span>
+      <!-- Заполняется JS -->
+    </div>
+    <p class="disc" id="footDisc"></p>
+  </div>
+</footer>
+
+<div class="fab up"><button id="toTop" type="button" title="Наверх" aria-label="Наверх">↑</button></div>
+<div class="fab down"><button id="toBottom" type="button" title="Вниз" aria-label="Вниз">↓</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- конфигурация ----------
+  var BASE = location.href.replace(/[^/]*$/,"");
+  var DATA_GZ  = BASE + "okz.json.gz";
+  var DATA_JSON= BASE + "okz.json";
+  var META_GZ  = BASE + "okz_meta.json.gz";
+  var META_JSON= BASE + "okz_meta.json";
+
+  var PAGE_SIZE = 20;
+  var DEBOUNCE_MS = 180;
+  var SCROLL_THRESHOLD = 300;
+  var EMPTY_PQ = {digits:"", tokens:[], rawTerms:[], full:""};
+
+  // [code, name, kch, parent, level, isLeaf, root, sourceOrder]
+  var F_CODE=0, F_NAME=1, F_KCH=2, F_PARENT=3, F_LEVEL=4, F_LEAF=5, F_ROOT=6;
+
+  var LEVEL_NAMES = {
+    "1": "Раздел", "2": "Подгруппа", "3": "Малая группа", "4": "Начальная группа"
+  };
+
+  // ---------- состояние ----------
+  var RECORDS = [];
+  var BY_CODE = {};
+  var filtered = [];
+  var shown = PAGE_SIZE;
+  var META = null;
+  var pendingFocusCode = "";
+
+  // ---------- dom ----------
+  var $ = function(id){return document.getElementById(id);};
+  var elState=$("state"), elList=$("list"), elMoreWrap=$("moreWrap"), elMore=$("more");
+  var elQ=$("q"), elClear=$("clear"), elBox=$("searchbox"), 
+      elRoot=$("root-filter"), elLevel=$("level-filter"),
+      elFound=$("found"), elDate=$("dateLine"),
+      elFootLead=$("footLead"), elFootSources=$("footSources"),
+      elFootDisc=$("footDisc"), elToast=$("toast"),
+      elTop=$("toTop"), elBottom=$("toBottom");
+
+  // ---------- утилиты ----------
+  function norm(s){
+    s = String(s==null?"":s).toLowerCase().replace(/ё/g,"е");
+    s = s.replace(/[^a-zа-я0-9]+/g," ");
+    s = s.replace(/\s+/g," ").trim();
+    return s;
+  }
+  function escHtml(s){
+    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+  function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0"); }
+  function plural(n,forms){
+    var n10=n%10, n100=n%100;
+    if(n10===1 && n100!==11) return forms[0];
+    if(n10>=2 && n10<=4 && (n100<10||n100>=20)) return forms[1];
+    return forms[2];
+  }
+  function commonPrefixOk(a,b){
+    var max = Math.min(5, a.length, b.length);
+    if(max < 4) return false;
+    return a.slice(0,max) === b.slice(0,max);
+  }
+  function extractWords(text){
+    var n = norm(text);
+    return n ? n.split(" ").filter(Boolean) : [];
+  }
+
+  // ---------- загрузка ----------
+  async function fetchJson(gzUrl, jsonUrl){
+    try{
+      if (typeof DecompressionStream === "function"){
+        var r = await fetch(gzUrl,{cache:"no-store"});
+        if (r.ok){
+          var ds = new DecompressionStream("gzip");
+          var decompressed = r.body.pipeThrough(ds);
+          var text = await new Response(decompressed).text();
+          return JSON.parse(text);
+        }
+      }
+    }catch(e){ /* fallback */ }
+    var r2 = await fetch(jsonUrl,{cache:"no-store"});
+    if(!r2.ok) throw new Error("не удалось получить файл, код ответа "+r2.status);
+    return await r2.json();
+  }
+
+  async function loadAll(){
+    elState.hidden=false; elState.className=""; elState.textContent="Загрузка данных справочника…";
+    elList.hidden=true; elList.innerHTML=""; elMoreWrap.hidden=true; elMore.textContent="";
+    elFound.textContent="Загрузка…"; elDate.textContent="";
+
+    var data, meta=null;
+    try{
+      data = await fetchJson(DATA_GZ, DATA_JSON);
+    }catch(err){
+      elState.className="error";
+      elState.innerHTML = "Не удалось загрузить данные справочника.<br>"+
+        "<small>"+escHtml(err&&err.message||err)+"</small><br>"+
+        '<button class="retry" id="retryBtn" type="button">Повторить</button>';
+      var rb=$("retryBtn"); if(rb) rb.addEventListener("click", loadAll);
+      return;
+    }
+    try{ meta = await fetchJson(META_GZ, META_JSON); }catch(e){ meta=null; }
+
+    META = meta;
+    initUI();
+    buildIndexes(data);
+    renderFooter();
+    renderDateLine();
+    parseUrlAndApply();
+  }
+
+  function initUI() {
+    elRoot.innerHTML = '<option value="">Все разделы</option>';
+    if (META && META.roots) {
+      META.roots.forEach(function(r) {
+        var opt = document.createElement("option");
+        opt.value = r.root;
+        var shortName = r.name.length > 40 ? r.name.substring(0, 37) + "…" : r.name;
+        opt.textContent = r.root + " — " + shortName + " (" + r.count + ")";
+        opt.title = r.name;
+        elRoot.appendChild(opt);
+      });
+    }
+  }
+
+  // ---------- построение индексов ----------
+  function buildIndexes(arr){
+    RECORDS = []; BY_CODE = {};
+    if(!Array.isArray(arr)) arr=[];
+
+    for(var i=0;i<arr.length;i++){
+      var it = arr[i]||[];
+      var code = String(it[F_CODE]==null?"":it[F_CODE]).trim();
+      var name = String(it[F_NAME]==null?"":it[F_NAME]).trim();
+      var kch = String(it[F_KCH]==null?"":it[F_KCH]).trim();
+      var parent = String(it[F_PARENT]==null?"":it[F_PARENT]).trim();
+      var level = String(it[F_LEVEL]==null?"":it[F_LEVEL]).trim();
+      var root = String(it[F_ROOT]==null?"":it[F_ROOT]).trim();
+
+      if(!code) continue;
+
+      var nName = norm(name);
+      var words = extractWords(name);
+
+      var rec = {
+        code: code, name: name, kch: kch, parent: parent, level: level, root: root,
+        nName: nName, words: words,
+        searchBlob: norm(code + " " + kch + " " + name)
+      };
+
+      RECORDS.push(rec);
+      BY_CODE[code] = rec;
+    }
+  }
+
+  // ---------- поиск ----------
+  function prepareQuery(q){
+    var raw = String(q||"");
+    var digits = raw.replace(/[^0-9]/g,"");
+    var n = norm(raw);
+    var tokens = n ? n.split(" ").filter(Boolean) : [];
+    var rawTerms = raw.trim().split(/\s+/).filter(Boolean);
+
+    return {digits:digits, tokens:tokens, rawTerms:rawTerms, full:tokens.join(" ")};
+  }
+
+  function tokenMatches(token, rec){
+    if(!token) return true;
+    if(rec.searchBlob.indexOf(token) >= 0) return true;
+
+    var words = rec.words || [];
+    for(var i=0;i<words.length;i++){
+      if(commonPrefixOk(token, words[i])) return true;
+    }
+    return false;
+  }
+
+  function scoreRecord(r, pq){
+    var score=0;
+
+    // Поиск только по коду (цифры, пробелы, точки)
+    var isCodeOnly = pq.rawTerms.length > 0 && pq.rawTerms.every(function(t){ 
+      return /^[\d\s\.]+$/.test(t); 
+    });
+
+    if (isCodeOnly && pq.digits) {
+      if (r.code === pq.digits) return 100;
+      if (r.code.indexOf(pq.digits) === 0) return 75;
+      return null;
+    }
+
+    // Смешанный поиск
+    if(pq.digits){
+      if(r.code === pq.digits) score += 100;
+      else if(r.code.indexOf(pq.digits) === 0) score += 75;
+    }
+
+    if(pq.tokens.length){
+      for(var ti=0; ti<pq.tokens.length; ti++){
+        if(!tokenMatches(pq.tokens[ti], r)) return null;
+      }
+    }
+
+    if(pq.full){
+      if(r.nName === pq.full) score += 60;
+      else if(r.nName.indexOf(pq.full) === 0) score += 50;
+      else if(r.nName.indexOf(pq.full) >= 0) score += 35;
+    }
+
+    for(var k=0;k<pq.tokens.length;k++){
+      var t = pq.tokens[k];
+      if(r.nName.indexOf(t) >= 0) score += 5;
+    }
+
+    if(score <= 0) return null;
+    return score;
+  }
+
+  function applyFilters(){
+    var pq = prepareQuery(elQ.value);
+    var hasQuery = !!(pq.digits || pq.tokens.length);
+    var rootFilter = elRoot.value;
+    var levelFilter = elLevel.value;
+
+    var base = RECORDS.filter(function(r) {
+      if (rootFilter && r.root !== rootFilter) return false;
+      if (levelFilter && r.level !== levelFilter) return false;
+      return true;
+    });
+
+    if(hasQuery){
+      var scored=[];
+      for(var a=0;a<base.length;a++){
+        var s = scoreRecord(base[a], pq);
+        if(s!==null) scored.push({r:base[a], s:s});
+      }
+      scored.sort(function(x,y){
+        if(y.s !== x.s) return y.s - x.s;
+        return x.r.code < y.r.code ? -1 : x.r.code > y.r.code ? 1 : 0;
+      });
+      filtered = scored.map(function(o){return o.r;});
+    }else{
+      filtered = base;
+    }
+
+    filtered._pq = pq;
+    filtered._hasQuery = hasQuery;
+
+    shown = PAGE_SIZE;
+    renderList();
+  }
+
+  // ---------- рендер списка ----------
+  function renderList(){
+    var pq = filtered._pq || EMPTY_PQ;
+    var terms = pq.rawTerms || [];
+    var digits = pq.digits || "";
+    var total = filtered.length;
+
+    if(total===0){
+      elList.hidden=true; elList.innerHTML="";
+      elState.hidden=false; elState.className="";
+      elState.innerHTML = '<div class="empty">Ничего не найдено. Попробуйте сократить запрос.</div>';
+      elFound.innerHTML = "Найдено: <b>0</b>";
+      elMore.textContent=""; elMoreWrap.hidden=true;
+      return;
+    }
+
+    var visible = Math.min(shown, total);
+    elFound.innerHTML = "Найдено: <b>"+fmtNum(total)+"</b> · Показано: <b>"+fmtNum(visible)+"</b>";
+
+    elState.hidden=true; elList.hidden=false;
+    var frag = document.createDocumentFragment();
+    var slice = filtered.slice(0, shown);
+    for(var j=0;j<slice.length;j++) frag.appendChild(buildCard(slice[j], terms, digits));
+    elList.innerHTML=""; elList.appendChild(frag);
+
+    if(visible < total){
+      var next = Math.min(shown+PAGE_SIZE, total);
+      elMore.textContent = "Показать ещё +"+fmtNum(next-visible)+" (показано "+fmtNum(visible)+" из "+fmtNum(total)+")";
+      elMore.disabled=false;
+      elMoreWrap.hidden=false;
+    }else{
+      elMore.textContent="";
+      elMoreWrap.hidden=true;
+    }
+  }
+
+  // ---------- подсветка ----------
+  function hlText(text, rawTerms){
+    var safe = escHtml(text);
+    if(!rawTerms || !rawTerms.length) return safe;
+    var re = new RegExp("("+rawTerms.map(escRe).join("|")+")","gi");
+    return safe.replace(re,"<mark>$1</mark>");
+  }
+  function hlCode(code, digits){
+    var safe = escHtml(code);
+    if(digits && code.indexOf(digits)===0){
+      return "<mark>"+escHtml(digits)+"</mark>"+escHtml(code.slice(digits.length));
+    }
+    if(digits && code.indexOf(digits)>=0){
+      return safe.replace(new RegExp("("+escRe(digits)+")"),"<mark>$1</mark>");
+    }
+    return safe;
+  }
+
+  // ---------- карточка ----------
+  function buildCard(r, terms, digits){
+    var li = document.createElement("li");
+    var card = document.createElement("article");
+    card.className = "card lvl-" + r.level;
+    card.dataset.code = r.code;
+
+    var top = document.createElement("div"); top.className="card-top";
+
+    // Код
+    var codeBtn = document.createElement("button");
+    codeBtn.type="button"; codeBtn.className="code";
+    codeBtn.innerHTML = hlCode(r.code, digits);
+    codeBtn.title = "Копировать код: " + r.code;
+    codeBtn.dataset.act = "copy-code"; codeBtn.dataset.val = r.code;
+    top.appendChild(codeBtn);
+
+    // КЧ
+    if (r.kch) {
+      var kchBtn = document.createElement("button");
+      kchBtn.type="button"; kchBtn.className="kch-badge";
+      kchBtn.textContent = "КЧ " + r.kch;
+      kchBtn.title = "Контрольное число: " + r.kch;
+      kchBtn.dataset.act = "copy-kch"; kchBtn.dataset.val = r.kch;
+      top.appendChild(kchBtn);
+    }
+
+    // Бейдж уровня
+    var lvlBadge = document.createElement("span");
+    lvlBadge.className = "badge-lvl";
+    lvlBadge.textContent = r.level + " · " + (LEVEL_NAMES[r.level] || "Группа");
+    top.appendChild(lvlBadge);
+
+    // Бейдж раздела (кликабельный)
+    if (r.root && META && META.roots) {
+      var rootData = META.roots.find(function(x){return x.root === r.root;});
+      if (rootData) {
+        var rootBadge = document.createElement("button");
+        rootBadge.type="button"; rootBadge.className="badge-root";
+        var shortName = rootData.name.split(" ")[0]; // Первое слово для краткости
+        rootBadge.textContent = "§" + r.root + " " + shortName;
+        rootBadge.title = "Показать только раздел: " + rootData.name;
+        rootBadge.dataset.act = "filter-root"; rootBadge.dataset.val = r.root;
+        top.appendChild(rootBadge);
+      }
+    }
+
+    // Копировать строку
+    var copyFull = document.createElement("button");
+    copyFull.type="button"; copyFull.className="copy-full";
+    var fullVal = r.code + (r.kch ? " " + r.kch : "") + "; " + r.name;
+    copyFull.textContent = "📋 строка";
+    copyFull.title = "Скопировать: " + fullVal;
+    copyFull.dataset.act = "copy-full"; copyFull.dataset.val = fullVal;
+    top.appendChild(copyFull);
+
+    card.appendChild(top);
+
+    // Название
+    var name = document.createElement("div"); name.className="name";
+    name.innerHTML = hlText(r.name, terms);
+    card.appendChild(name);
+
+    // Путь от родителя
+    if (r.parent && BY_CODE[r.parent]) {
+      var path = document.createElement("div"); path.className="path";
+      path.innerHTML = '<span>Родитель: </span>';
+      var pBtn = document.createElement("button");
+      pBtn.type = "button"; pBtn.className="path-btn";
+      pBtn.textContent = "[" + r.parent + "] " + BY_CODE[r.parent].name;
+      pBtn.dataset.act = "open-code"; pBtn.dataset.val = r.parent;
+      path.appendChild(pBtn);
+      card.appendChild(path);
+    }
+
+    li.appendChild(card);
+    return li;
+  }
+
+  // ---------- редакция / футер ----------
+  function renderDateLine(){
+    var parts=[];
+    if(META && META.change) {
+      var chDate = META.source_date_display ? " от " + META.source_date_display : "";
+      parts.push(META.change + chDate);
+    }
+    elDate.textContent = parts.join(" · ");
+
+    var titleParts=[];
+    if(META && META.standard_line) titleParts.push(META.standard_line);
+    if(META && META.provenance) titleParts.push(META.provenance);
+    elDate.title = titleParts.join(" | ");
+  }
+
+  function renderFooter(){
+    var total = RECORDS.length;
+    var s = "В справочнике "+fmtNum(total)+" "+plural(total,["запись","записи","записей"])+
+            " и "+(META?.roots?.length || 0)+" "+plural((META?.roots?.length || 0),["раздел","раздела","разделов"])+".";
+    elFootLead.innerHTML = escHtml(s).replace(/(\d[\d\u00a0.]*)/g,"<b>$1</b>");
+
+    if (META && META.primary_sources) {
+      var linksHtml = '<span class="cap">Текстовые редакции для сверки:</span>';
+      META.primary_sources.forEach(function(src) {
+        if (!src.url.includes("classifikators")) {
+          linksHtml += ' <a href="'+src.url+'" rel="noopener" target="_blank">'+escHtml(src.name.split(" ")[0])+'</a>';
+        }
+      });
+      linksHtml += ' <a href="https://github.com/prog815/okz" rel="noopener" target="_blank">О справочнике</a>';
+      elFootSources.innerHTML = linksHtml;
+    }
+
+    var disc = (META && META.disclaimer)
+      ? META.disclaimer
+      : "Материалы носят справочный характер и не являются точными копиями официальных документов. Перед применением в официальных документах сверяйте по первоисточнику.";
+    
+    elFootDisc.textContent = disc;
+  }
+
+  // ---------- навигация ----------
+  function focusCode(code){
+    setTimeout(function(){
+      var el = document.querySelector('article.card[data-code="'+code+'"]');
+      if(!el) return;
+      document.querySelectorAll(".card.highlight").forEach(function(node){ node.classList.remove("highlight"); });
+      el.classList.add("highlight");
+      el.scrollIntoView({behavior:"smooth", block:"center"});
+      setTimeout(function(){ el.classList.remove("highlight"); }, 1800);
+    }, 30);
+  }
+
+  // ---------- URL ----------
+  function parseUrlAndApply(){
+    var sp = new URLSearchParams(location.search);
+    var code = sp.get("code") || "";
+    var q = sp.get("q") || "";
+    var root = sp.get("root") || "";
+    var lvl = sp.get("lvl") || "";
+
+    elRoot.value = root;
+    elLevel.value = lvl;
+
+    pendingFocusCode = "";
+    if(code){
+      elQ.value = code;
+      pendingFocusCode = code;
+    }else{
+      elQ.value = q;
+    }
+    syncClear();
+
+    applyFilters();
+    if(pendingFocusCode) focusCode(pendingFocusCode);
+  }
+  
+  function syncUrl(){
+    var sp = new URLSearchParams();
+    var q = elQ.value.trim(); if(q) sp.set("q", q);
+    var root = elRoot.value; if(root) sp.set("root", root);
+    var lvl = elLevel.value; if(lvl) sp.set("lvl", lvl);
+    var qs = sp.toString();
+    var url = location.pathname + (qs?("?"+qs):"");
+    try{ history.replaceState(null,"",url); }catch(e){}
+  }
+
+  // ---------- копирование + тост ----------
+  var toastTimer=null;
+  function toast(msg){
+    elToast.textContent = msg;
+    elToast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, 1600);
+  }
+  function copyText(text, label){
+    var done=function(){ toast(label); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallbackCopy(text); done(); });
+    }else{ fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text){
+    var ta=document.createElement("textarea");
+    ta.value=text; ta.setAttribute("readonly",""); ta.style.position="absolute"; ta.style.left="-9999px";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function onListClick(e){
+    var btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    var act = btn.dataset.act, val = btn.dataset.val;
+    
+    if(act==="copy-code") copyText(val, "Код "+val+" скопирован");
+    else if(act==="copy-kch") copyText(val, "КЧ "+val+" скопировано");
+    else if(act==="copy-full") copyText(val, "Скопировано: "+val);
+    else if(act==="filter-root") {
+      elRoot.value = val;
+      applyFilters();
+      syncUrl();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+    else if(act==="open-code") {
+      elQ.value = val;
+      syncClear();
+      applyFilters();
+      syncUrl();
+      focusCode(val);
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+  }
+
+  // ---------- события ----------
+  function syncClear(){ elBox.classList.toggle("has-val", !!elQ.value); }
+
+  var deb=null;
+  function onInput(){
+    syncClear();
+    clearTimeout(deb);
+    deb=setTimeout(function(){ applyFilters(); syncUrl(); }, DEBOUNCE_MS);
+  }
+
+  elQ.addEventListener("input", onInput);
+  elQ.addEventListener("search", function(){ syncClear(); applyFilters(); syncUrl(); });
+  elClear.addEventListener("click", function(){ elQ.value=""; syncClear(); applyFilters(); syncUrl(); elQ.focus(); });
+  elRoot.addEventListener("change", function(){ applyFilters(); syncUrl(); });
+  elLevel.addEventListener("change", function(){ applyFilters(); syncUrl(); });
+  elMore.addEventListener("click", function(){ shown += PAGE_SIZE; renderList(); });
+  elList.addEventListener("click", onListClick);
+
+  window.addEventListener("popstate", function(){ parseUrlAndApply(); });
+
+  function onScroll(){
+    var y = window.scrollY || document.documentElement.scrollTop || 0;
+    var docH = document.documentElement.scrollHeight;
+    var winH = window.innerHeight;
+    elTop.style.display = (y>SCROLL_THRESHOLD) ? "block":"none";
+    elBottom.style.display = (y>SCROLL_THRESHOLD && (y+winH) < (docH-40)) ? "block":"none";
+  }
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", onScroll);
+  elTop.addEventListener("click", function(){ window.scrollTo({top:0,behavior:"smooth"}); });
+  elBottom.addEventListener("click", function(){ window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"}); });
+
+  syncClear();
+  loadAll();
+})();
+</script>
+</body>
+</html>
