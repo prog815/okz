@@ -98,8 +98,62 @@ jobs:
             fi
           fi
 
-      - name: Commit and push changes
+      - name: Check metadata — гейт публикации META_OK
         if: env.FILES_OK == 'true'
+        run: |
+          # Гейт v-next.2: блокирует коммит при проблемах с метаданными.
+          # Необходимое, но недостаточное условие - FILES_OK (наличие 4 файлов).
+          # Проверяем:
+          # 1) publish_allowed == true
+          # 2) critical_errors == []
+          # 3) data_hash_full — 64 hex-символа
+          # 4) data_hash == data_hash_full[:16]
+          # 5) records_count > 0
+          # Warnings НЕ блокируют (уходят в диагностику), но critical_errors - да.
+          echo "META_OK=false" >> "$GITHUB_ENV"
+          python - <<'PYEOF'
+          import json
+          import sys
+
+          with open("okz_meta.json", "r", encoding="utf-8") as handle:
+              m = json.load(handle)
+
+          errors = []
+
+          if not m.get("publish_allowed"):
+              errors.append("publish_allowed=false")
+
+          if m.get("critical_errors"):
+              errors.append("critical_errors=" + str(m.get("critical_errors")))
+
+          data_hash = m.get("data_hash", "")
+          data_hash_full = m.get("data_hash_full", "")
+
+          if not data_hash_full or len(data_hash_full) != 64:
+              errors.append("data_hash_full не 64 символа: " + repr(len(data_hash_full)))
+          elif not data_hash_full.startswith(data_hash):
+              errors.append("data_hash != data_hash_full[:16]")
+
+          if m.get("records_count", 0) <= 0:
+              errors.append("records_count <= 0")
+
+          if errors:
+              print("META FAIL:")
+              for e in errors:
+                  print(" - " + e)
+              sys.exit(1)
+
+          print("META OK:")
+          print(" - publish_allowed:", m.get("publish_allowed"))
+          print(" - records_count:", m.get("records_count"))
+          print(" - data_hash:", data_hash)
+          print(" - data_hash_full:", data_hash_full[:16] + "...")
+          print(" - warnings:", m.get("warnings"))
+          PYEOF
+          echo "META_OK=true" >> "$GITHUB_ENV"
+
+      - name: Commit and push changes
+        if: env.FILES_OK == 'true' && env.META_OK == 'true'
         run: |
           git config --local user.email "github-actions@github.com"
           git config --local user.name "GitHub Actions"
