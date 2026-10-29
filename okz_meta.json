@@ -5,6 +5,8 @@
   "international_standard": "ISCO-08",
   "standard_line": "Классификатор ОК 010-2014 (МСКЗ-08) с изменением № 1/2021. Введено 01.03.2021 с правом досрочного применения в правоотношениях, возникших с 15.05.2019. Приказ Росстандарта от 18.02.2021 №83-ст.",
   "change": "изменение № 1/2021",
+  "current_change": "1/2021",
+  "change_display": "Изменение № 1/2021 от 1 марта 2021",
   "effective_date": "2021-03-01",
   "effective_date_display": "1 марта 2021",
   "early_apply_date": "2019-05-15",
@@ -15,11 +17,15 @@
   "source_filename": "okz.xlsx",
   "source_sha256": "1372097fd1f6476f23862baa97ec79b9b7cf88118b07f72862ab069bcb1d69c0",
   "source_modified": "Thu, 15 May 2025 15:17:16 GMT",
+  "source_meta_created": null,
+  "source_meta_modified": null,
+  "source_meta_valid_until": null,
+  "source_meta_note": "N/A для classifikators (не CSV Росстата)",
   "source_date": "2021-03-01",
   "source_date_display": "1 марта 2021",
   "source_date_origin": "editorial_effective_date",
   "provenance": "classifikators.ru · изменение № 1/2021",
-  "generated_at": "2026-10-28T00:07:47.791522+00:00",
+  "generated_at": "2026-10-29T14:32:35.857316+00:00",
   "version": "2021-03-01",
   "records_count": 618,
   "declared_count": 618,
@@ -76,6 +82,60 @@
       "count": 51
     }
   ],
+  "sections_count": 10,
+  "sections": [
+    {
+      "section": "0",
+      "name": "Военнослужащие",
+      "count": 10
+    },
+    {
+      "section": "1",
+      "name": "Руководители",
+      "count": 49
+    },
+    {
+      "section": "2",
+      "name": "Специалисты высшего уровня квалификации",
+      "count": 132
+    },
+    {
+      "section": "3",
+      "name": "Специалисты среднего уровня квалификации",
+      "count": 109
+    },
+    {
+      "section": "4",
+      "name": "Служащие, занятые подготовкой и оформлением документации, учетом и обслуживанием",
+      "count": 41
+    },
+    {
+      "section": "5",
+      "name": "Работники сферы обслуживания и торговли, охраны граждан и собственности",
+      "count": 57
+    },
+    {
+      "section": "6",
+      "name": "Квалифицированные работники сельского и лесного хозяйства, рыбоводства и рыболовства",
+      "count": 25
+    },
+    {
+      "section": "7",
+      "name": "Квалифицированные рабочие промышленности, строительства, транспорта и рабочие родственных занятий",
+      "count": 86
+    },
+    {
+      "section": "8",
+      "name": "Операторы производственных установок и машин, сборщики и водители",
+      "count": 58
+    },
+    {
+      "section": "9",
+      "name": "Неквалифицированные рабочие",
+      "count": 51
+    }
+  ],
+  "sections_note": "10 основных групп ОКЗ (0–9) — корневые разделы справочника. section = первая цифра кода (root). Иерархия внутри каждого раздела — 4 уровня ISCO-08: основная группа → подгруппа → малая группа → начальная группа.",
   "levels_count": {
     "1": 10,
     "2": 43,
@@ -113,27 +173,46 @@
   "hierarchy_note": "ОКЗ — четырёхуровневый иерархический справочник (основная группа → подгруппа → малая группа → начальная группа). В отличие от плоских справочников экосистемы иерархия строится автоматически по цифровому префиксу кода, без ручных правил. Спец-случай 'одна начальная группа' (231 → 2310, одинаковые имена) разрешён стандартом и воспроизводится как есть.",
   "code_system_note": "Код ОКЗ состоит из 1, 2, 3 или 4 цифровых знаков, которые относятся соответственно к основной группе, подгруппе, малой группе и начальной группе. Пятый знак в официальной форме 'XXXX K' — контрольное число (КЧ), хранится отдельным полем и не участвует в иерархии. Иерархия строится по усечению кода справа: родитель кода ищется как ближайший существующий префикс.",
   "aliases_included": false,
-  "aliases_source": "none",
+  "aliases_source": null,
   "manual_overlays": [],
+  "subject_overrides_applied": [],
+  "subject_morphology_normalized": 0,
   "disclaimer": "Материалы носят справочный характер и не являются точными копиями официальных документов. Перед применением в официальных документах сверяйте по первоисточнику. ОКЗ гармонизирован с МСКЗ-08 (ISCO-08) путём уточнений, отражающих специфику российской экономики; коды и границы понятий при этом не нарушаются.",
   "primary_sources": [
     {
+      "name": "Росстандарт (ОК 010-2014)",
+      "url": "https://protect.gost.ru/",
+      "role": "primary"
+    },
+    {
       "name": "classifikators.ru (машиночитаемый снимок)",
-      "url": "https://classifikators.ru/okz"
+      "url": "https://classifikators.ru/okz",
+      "role": "secondary"
     },
     {
       "name": "Гарант (ОК 010-2014)",
-      "url": "https://internet.garant.ru/#/document/70968844"
+      "url": "https://internet.garant.ru/#/document/70968844",
+      "role": "secondary"
     },
     {
       "name": "КонсультантПлюс (ОК 010-2014)",
-      "url": "https://www.consultant.ru/document/cons_doc_LAW_177953/"
+      "url": "https://www.consultant.ru/document/cons_doc_LAW_177953/",
+      "role": "secondary"
     },
     {
       "name": "Кодекс (ОК 010-2014)",
-      "url": "https://docs.cntd.ru/document/1200121893"
+      "url": "https://docs.cntd.ru/document/1200121893",
+      "role": "secondary"
     }
   ],
+  "presence_guard_version": "v-next.2/okz-1",
+  "parse_counters": {
+    "total_rows": 618,
+    "name_had_nbsp": 0,
+    "name_had_replacement": 0,
+    "name_had_control": 0,
+    "name_had_whitespace_collapsed": 0
+  },
   "statistics": {
     "records": 618,
     "roots": 10,
@@ -150,6 +229,7 @@
   "critical_errors": [],
   "publish_allowed": true,
   "data_hash": "9262a3e0ef40e466",
+  "data_hash_full": "9262a3e0ef40e4668052195a6585a172f70e46901b406a4a20e4105f10c0a979",
   "file_size_json": 81762,
   "file_size_json_gz": 14923
 }
