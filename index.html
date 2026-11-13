@@ -1,301 +1,391 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ОКЗ — Общероссийский классификатор занятий</title>
-<meta name="description" content="Поиск по ОКЗ: код занятия (с КЧ и без), наименование, раздел. Иерархический справочник занятий (ОК 010-2014). Источник — машиночитаемый снимок.">
-<meta name="theme-color" content="#f0f4f8">
-<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
+<title>ОКЗ — Общероссийский классификатор занятий | поиск по кодам и профессиям</title>
+<meta name="description" content="Онлайн-справочник ОКЗ (ОК 010-2014): мгновенный поиск кодов занятий (профессий) по коду, КЧ, наименованию и разделу. Актуальные данные.">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/favicon.svg?v=1.0.0">
+<meta name="theme-color" content="#f5f7fb">
+
+<!-- JSON-LD микроразметка -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Общероссийский классификатор занятий (ОКЗ)",
+  "description": "Справочный снимок открытых данных (ОК 010-2014, МСКЗ-08)",
+  "url": "https://prog815.github.io/okz/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Экосистема «Классик»",
+    "url": "https://prog815.github.io/"
+  },
+  "author": {
+    "@type": "Person",
+    "sameAs": [
+      "https://m.vk.ru/alekseyenin",
+      "https://t.me/AlekseyEnin",
+      "https://max.ru/channel_prog815",
+      "https://www.linkedin.com/in/eavprog/"
+    ]
+  }
+}
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script>
+  (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+  m[i].l=1*new Date();
+  for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+  k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+  (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+  ym(105817342, "init", {
+    clickmap: true,
+    trackLinks: true,
+    accurateTrackBounce: true
+  });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/105817342" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SM54ENZHYS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SM54ENZHYS');
+</script>
+<!-- /Google tag -->
+
+<!-- Общие ассеты хаба -->
+<script src="https://prog815.github.io/share.js?v=1.0.3" defer></script>
+
 <style>
   [hidden]{display:none!important}
 
   :root{
-    --bg:#f0f4f8; --panel:#ffffff; --text:#1a202c; --muted:#4a5568;
-    --line:#e2e8f0; --line-strong:#cbd5e0;
-    --accent:#2c5282; --accent-weak:#ebf4ff; --accent-text:#2b6cb0;
-    --mark:#fefcbf; --danger:#c53030;
-    --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.05);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-    --radius:12px;
-
-    --code:#2c5282;   --code-bg:#ebf4ff;   --code-fg:#1a365d;
-    --kch:#718096;    --kch-bg:#edf2f7;    --kch-fg:#2d3748;
-    --root:#2f855a;   --root-bg:#f0fff4;   --root-fg:#22543d;
-
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#5b6b7f;
+    --line:#e2e8f0; --brand:#2c5282; --brand-d:#1a365d; --accent:#ebf4ff;
+    --mark:#fef08a; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+    --radius:16px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    
     --lvl-1:#2b6cb0; --lvl-2:#3182ce; --lvl-3:#4299e1; --lvl-4:#63b3ed;
+    --kch-bg:#edf2f7; --kch-fg:#2d3748;
+    --od-bg:#f3e8ff;
   }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#0b1120; --panel:#111a2c; --ink:#e6edf7; --muted:#94a3b8;
+      --line:#1e293b; --brand:#60a5fa; --brand-d:#3b82f6; --accent:rgba(96,165,250,.12);
+      --mark:#854d0e; --shadow:0 1px 2px rgba(0,0,0,.4);
+      --od-bg:rgba(167,139,250,.15);
+    }
+  }
+
   *{box-sizing:border-box}
-  html,body{margin:0}
+  html,body{margin:0;padding:0}
   body{
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg); color:var(--text); line-height:1.45;
+    background:var(--bg); color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     -webkit-text-size-adjust:100%;
   }
-  a{color:var(--accent-text)}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+  a{color:var(--brand); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 14px}
+  .skip-link{position:absolute;left:-9999px;top:0;background:var(--panel);padding:10px;z-index:100;}
+  .skip-link:focus{left:0;}
 
-  /* header */
-  .hero{padding:18px 0 6px}
-  .hero h1{margin:0 0 4px;font-size:30px;letter-spacing:.2px}
-  .hero p{margin:0;color:var(--muted);font-size:15px;max-width:940px}
-  .hero p b{color:var(--text);font-weight:600}
-  .notice{
-    margin:12px 0 2px;padding:10px 14px;border:1px solid var(--line-strong);
-    border-left:5px solid var(--accent);border-radius:10px;background:var(--panel);
-    color:var(--text);font-size:13.5px;box-shadow:var(--shadow);
-  }
-  .notice a{white-space:nowrap}
-  .hints{margin:10px 0 0;color:var(--muted);font-size:13px}
-  .hints .mono{font-family:var(--mono);letter-spacing:.3px}
+  /* Баннер хаба */
+  .klassik-banner{display:block;max-width:1200px;margin:0 auto;padding:8px 16px;text-decoration:none;opacity:.9}
+  .klassik-banner:hover{opacity:1}
+  .klassik-banner img{display:block;width:100%;height:auto}
 
-  /* sticky search panel */
-  .panel{
-    position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);
-    backdrop-filter:saturate(1.1) blur(6px);
-    border-bottom:1px solid var(--line);padding:12px 0;margin-top:0;
-  }
-  .panel .wrap{display:flex;flex-direction:column;gap:10px}
-  .row1{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .searchbox{position:relative;flex:1 1 300px;min-width:220px}
-  #q{
-    width:100%;padding:11px 38px 11px 13px;border:1px solid var(--line-strong);
-    border-radius:10px;font-size:15px;background:var(--panel);color:var(--text);
-  }
-  #q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
-  .clear-btn{
-    position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    border:none;background:transparent;color:var(--muted);font-size:16px;line-height:1;
-    cursor:pointer;padding:6px 8px;border-radius:8px;display:none;
-  }
-  .clear-btn:hover{background:var(--accent-weak);color:var(--accent-text)}
-  .searchbox.has-val .clear-btn{display:block}
+  header.hero{padding:16px 0 6px}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
 
-  select.filters{
-    padding:11px 14px;border:1px solid var(--line-strong);border-radius:10px;
-    font-size:14px;background:var(--panel);color:var(--text);cursor:pointer;
-    flex:0 1 auto; outline:none; max-width: 100%;
+  /* Панель поиска и фильтров */
+  .search-container{padding:12px 0 8px;}
+  .searchbar{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
+  .searchbar input[type=text]{
+    flex:2; min-width:200px; font-size:16px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); color:var(--ink); outline:none;
+    transition:border-color .2s;
   }
-  select.filters:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
-
-  /* status line */
-  .statusline{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;
-    color:var(--muted);font-size:13px;padding:2px 2px 0}
-  .statusline .found b{color:var(--text)}
-  .statusline .actions{display:flex;gap:12px;align-items:baseline}
-  .statusline .clear-all{
-    color:var(--accent-text); text-decoration:underline; text-decoration-style:dotted;
-    text-underline-offset:3px; cursor:pointer; background:none; border:none;
-    font:inherit; font-size:13px; padding:0;
+  .searchbar input[type=text]:focus{border-color:var(--brand); box-shadow:0 0 0 3px var(--accent)}
+  
+  .searchbar select {
+    flex:1; min-width:140px; font-size:14px; padding:12px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); color:var(--ink); outline:none; cursor:pointer;
   }
-  .statusline .clear-all:hover{color:var(--accent)}
+  .searchbar select:focus{border-color:var(--brand)}
 
-  /* results */
-  main{padding:14px 0 30px}
-  #state{padding:30px 4px;color:var(--muted);text-align:center}
-  #state.error{color:var(--danger)}
-  #state .retry{margin-top:10px;display:inline-block;padding:9px 14px;border:1px solid var(--line-strong);
-    border-radius:10px;background:var(--panel);color:var(--accent-text);cursor:pointer;font:inherit}
-  #list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-  .empty{padding:26px 4px;color:var(--muted);text-align:center}
+  .meta-line{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:12px 2px 8px; font-size:13px; color:var(--muted);
+  }
+  .meta-line .count b{color:var(--ink)}
+  .meta-line .clear-link{color:var(--muted); text-decoration:underline dashed; cursor:pointer}
+  .meta-line .clear-link:hover{color:var(--brand)}
 
-  /* card */
+  /* ---------- Загрузка ---------- */
+  #status{
+    padding:48px 4px;
+    text-align:center;
+    color:var(--muted);
+    animation:fade-in .25s ease-out;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #status .spinner{
+    width:46px; height:46px; border-radius:50%;
+    border:3px solid var(--line);
+    border-top-color:var(--brand);
+    margin:0 auto 16px;
+    animation:spin .85s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #status .loading-text{
+    font-size:15px; font-weight:500; color:var(--ink);
+    margin-bottom:6px;
+  }
+  #status .loading-text .dots span{
+    display:inline-block; opacity:0;
+    animation:dot-pulse 1.4s infinite;
+  }
+  #status .loading-text .dots span:nth-child(2){ animation-delay:.2s; }
+  #status .loading-text .dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes dot-pulse {
+    0%, 60%, 100% { opacity: 0; }
+    30% { opacity: 1; }
+  }
+  #status .substatus{
+    font-size:12px; color:var(--muted);
+    margin-top:4px;
+  }
+  #status .err{color:#e11d48; font-weight:500;}
+
+  #results{display:flex; flex-direction:column; gap:12px; padding-bottom:8px}
+
   .card{
-    background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--accent);
-    border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);
-    transition: border-left-color 0.2s;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:16px;
+    box-shadow:var(--shadow); position:relative;
+    transition:border-color .2s;
+    border-left: 5px solid var(--lvl-1);
   }
-  .card.lvl-1{border-left-color:var(--lvl-1)}
-  .card.lvl-2{border-left-color:var(--lvl-2)}
-  .card.lvl-3{border-left-color:var(--lvl-3)}
-  .card.lvl-4{border-left-color:var(--lvl-4)}
-  .card.highlight{outline:3px solid var(--accent);outline-offset:2px}
-  .card-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .card.lvl-1 { border-left-color: var(--lvl-1); }
+  .card.lvl-2 { border-left-color: var(--lvl-2); }
+  .card.lvl-3 { border-left-color: var(--lvl-3); }
+  .card.lvl-4 { border-left-color: var(--lvl-4); }
 
-  .code, .kch-badge{
-    font-family:var(--mono);font-weight:700;font-size:14px;letter-spacing:.4px;
-    border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;
-    transition:all 0.15s; font:inherit;
+  .card:hover{border-color:var(--brand)}
+  .card.highlight{border-color:var(--brand); box-shadow:0 0 0 2px var(--accent), var(--shadow)}
+
+  .row1{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; align-items:flex-start; margin-bottom:12px}
+
+  .code-btn {
+    appearance:none; border:1px solid var(--line); background:var(--accent);
+    color:var(--brand-d); font-family:var(--mono); font-weight:700; font-size:1.05rem;
+    padding:6px 12px; border-radius:8px; cursor:pointer; white-space:nowrap;
+    transition: background .15s;
   }
-  .code{background:var(--code-bg);color:var(--code-fg);font-size:15px;font-family:var(--mono);font-weight:700}
-  .code:hover{border-color:var(--code);background:#dbeafe}
-  .kch-badge{background:var(--kch-bg);color:var(--kch-fg);font-size:12px;font-weight:500;font-family:var(--mono)}
-  .kch-badge:hover{border-color:var(--kch);background:#e2e8f0}
+  .code-btn:hover { background:#dbeafe; border-color:var(--brand); }
 
-  .badge-lvl{
-    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;
-    background:#edf2f7;color:#4a5568;border:1px solid transparent;white-space:nowrap;
-    display:inline-block;
+  .kch-badge {
+    appearance:none; border:1px solid var(--line); background:var(--kch-bg);
+    color:var(--kch-fg); font-family:var(--mono); font-size:0.85rem; font-weight:600;
+    padding:6px 10px; border-radius:8px; cursor:pointer; white-space:nowrap;
+    transition: background .15s;
+  }
+  .kch-badge:hover { background:#e2e8f0; border-color:var(--muted); }
+
+  .badges { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; align-items:center; }
+  .badge { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; font-size:0.75rem; font-weight:600; border:1px solid transparent; white-space:nowrap; }
+  
+  .badge.lvl { background:var(--accent); color:var(--brand-d); }
+  .badge.root { background:#f0fff4; color:#22543d; border-color:#c6f6d5; cursor:pointer; transition: filter .15s; }
+  .badge.root:hover { filter:brightness(0.95); }
+  @media(prefers-color-scheme:dark){ .badge.root { background:rgba(47,133,90,.2); color:#9ae6b4; border-color:rgba(47,133,90,.4); } }
+
+  .name{
+    font-size:18px; font-weight:600; line-height:1.4; margin-bottom:12px; color:var(--ink);
   }
 
-  .badge-root{
-    font:inherit;font-size:12px;border-radius:999px;padding:4px 10px;cursor:pointer;
-    border:1px solid transparent;white-space:nowrap;
-    background:var(--root-bg);color:var(--root-fg);
-    transition:all 0.15s;
-  }
-  .badge-root:hover{border-color:var(--root);background:#c6f6d5}
+  mark { background:var(--mark); color:inherit; border-radius:2px; padding:0 1px; }
 
-  .copy-full{
-    margin-left:auto;border:1px dashed var(--line-strong);background:#f7fafc;color:var(--muted);
-    border-radius:8px;padding:4px 9px;cursor:pointer;font:inherit;font-size:13px;white-space:nowrap;
+  .actions{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    padding-top:12px; border-top:1px dashed var(--line);
   }
-  .copy-full:hover{border-color:var(--accent);color:var(--accent-text);background:var(--accent-weak)}
-
-  .name{margin-top:9px;font-size:15.5px;font-weight:650;word-break:break-word}
-  mark{background:var(--mark);border-radius:3px;padding:0 1px;color:inherit}
-
-  .card-actions{
-    display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;
-    padding-top:10px; border-top:1px dashed var(--line);
-    align-items:center;
+  .action-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:500; color:var(--muted);
+    background:transparent; border:1px solid transparent;
+    border-radius:6px; padding:4px 8px; cursor:pointer;
+    transition:all .2s; font-family:inherit;
   }
-  .btn-small{
-    border:1px solid var(--line-strong); background:var(--panel); color:var(--accent-text);
-    border-radius:8px; padding:5px 10px; font:inherit; font-size:13px; cursor:pointer;
-    transition:all 0.15s;
-  }
-  .btn-small:hover{border-color:var(--accent); background:var(--accent-weak)}
+  .action-btn:hover{background:var(--accent); color:var(--brand-d); border-color:var(--accent)}
 
-  .more{display:flex;justify-content:center;margin:16px 0 4px}
-  .more button{
-    padding:11px 18px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel);
-    color:var(--accent-text);font:inherit;font-size:14px;cursor:pointer;box-shadow:var(--shadow);
-  }
-  .more button:hover{border-color:var(--accent);background:var(--accent-weak)}
+  .share-slot{display:inline-flex}
+  .share-slot klassik-share { display: inline-flex; align-items: center; }
 
-  /* footer */
-  footer{border-top:1px solid var(--line);background:var(--panel)}
-  footer .wrap{padding:18px 16px 30px;color:var(--muted);font-size:14px}
-  footer h4{margin:0 0 8px;color:var(--text);font-size:15px}
-  footer .lead{margin:0 0 6px;color:var(--text)}
-  footer .lead b{font-weight:600}
-  footer .date-foot{margin:0 0 12px;color:var(--muted);font-size:13.5px}
-  footer .links{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:0 0 10px}
-  footer .links .cap{color:var(--muted)}
-  footer .links a{white-space:nowrap}
-  footer .disc{margin:10px 0 0;font-size:13px;color:#718096;line-height:1.5}
-
-  /* floating buttons + toast */
-  .fab{position:fixed;right:16px;display:flex;flex-direction:column;gap:8px;z-index:40}
-  .fab.up{bottom:74px}.fab.down{bottom:16px}
-  .fab button{
-    width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--panel);
-    color:var(--accent-text);font-size:18px;cursor:pointer;box-shadow:var(--shadow);display:none;
+  .more{
+    display:block; width:100%; margin:16px 0; padding:14px;
+    font-size:14px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--panel);
+    color:var(--brand); cursor:pointer;
   }
-  .fab button:hover{background:var(--accent-weak);border-color:var(--accent)}
+  .more:hover{border-color:var(--brand); background:var(--accent)}
+  .more[hidden]{display:none!important}
+
+  footer{margin:40px 0; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px}
+  footer .stats{margin:0 0 4px; font-weight:500; color:var(--ink)}
+  footer .date-line{margin:0 0 16px; font-size:12px}
+  footer .links{display:flex; flex-direction:column; gap:12px}
+  footer .row-label{font-size:12px; color:var(--muted); margin-bottom:2px}
+  footer a{color:var(--brand)}
+
+  footer .disc{
+    font-size:12px; margin-top:16px; line-height:1.5;
+    background:var(--od-bg); border:1px solid rgba(124,58,237,.2);
+    border-radius:10px; padding:12px 14px; color:var(--ink);
+  }
+
+  .fab{
+    position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+    border:1px solid var(--line); background:var(--panel); color:var(--brand-d);
+    font-size:20px; cursor:pointer; box-shadow:var(--shadow);
+    display:none; align-items:center; justify-content:center; z-index:40;
+  }
+  .fab.up{bottom:80px} .fab.down{bottom:24px} .fab.show{display:flex}
+
   .toast{
-    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
-    background:#1a202c;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;
-    box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60;
-    max-width:90vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:99px;
+    font-size:13px; font-weight:500; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:60;
   }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 
-  @media (max-width:640px){
-    .hero h1{font-size:25px}
-    .row1{flex-direction:column;align-items:stretch}
-    .row1>*{width:100%}
-    .searchbox{flex:auto}
-    select.filters{width:100%;flex:auto; margin-bottom:6px;}
-    .statusline{flex-direction:column;gap:6px}
-    .statusline .actions{flex-wrap:wrap}
-    .copy-full{margin-left:0}
+  .noscript-msg {
+    background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeeba;
+  }
+
+  @media(max-width:640px){
+    .klassik-banner{padding:4px 8px}
+    .wrap{padding:0 12px}
+    .name{font-size:16px}
+    .searchbar input[type=text], .searchbar select { width: 100%; flex: 1 1 100%; }
+    .row1 { flex-direction: column; }
+    .badges { justify-content: flex-start; margin-top: 8px; }
   }
 </style>
 </head>
 <body>
-<script src="https://prog815.github.io/common-menu/menu.js?v=3.0.0"></script>
-<script src="https://prog815.github.io/common-menu/share.js?v=1.0.0"></script>
-<common-projects-menu></common-projects-menu>
 
-<div class="wrap hero">
-  <h1>ОКЗ</h1>
-  <p>Общероссийский классификатор занятий (ОК 010-2014).
-     Поиск по <b>коду</b> (с КЧ и без) и <b>наименованию</b>.
-     Группировка по <b>10 основным группам</b> и <b>4 уровням</b> иерархии.</p>
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
-  <div class="notice">
-    <b>ОКЗ — это код занятия (профессии).</b>
-    Для поиска по видам экономической деятельности используйте
-    <a href="https://prog815.github.io/okved2/">ОКВЭД2</a>.
-  </div>
+<!-- Ссылка на центральный хаб -->
+<a class="klassik-banner" href="https://prog815.github.io/" title="На главную — все справочники">
+  <img src="https://prog815.github.io/banner.svg?v=1.0.0" alt="Экосистема «Классик» — все справочники">
+</a>
 
-  <div class="hints">
-    Форматы запроса: <span class="mono">2512</span> ·
-    <span class="mono">2512 1</span> ·
-    <span class="mono">25121</span> ·
-    слово из наименования.
-  </div>
-</div>
+<div class="wrap" id="main-content">
+  <header class="hero">
+    <h1>🎯 ОКЗ — Общероссийский классификатор занятий</h1>
+    <p class="sub">Мгновенный поиск по кодам занятий, контрольным числам (КЧ) и наименованиям (ОК 010-2014).</p>
+  </header>
 
-<div class="panel" id="panel">
-  <div class="wrap">
-    <div class="row1">
-      <div class="searchbox" id="searchbox">
-        <input id="q" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Код (например, 2512) или название"
-               aria-label="Поиск по ОКЗ">
-        <button class="clear-btn" id="clear-btn" type="button" title="Очистить запрос" aria-label="Очистить запрос">✕</button>
-      </div>
-      <select id="root-filter" class="filters" aria-label="Фильтр по основному разделу">
+  <noscript>
+    <div class="noscript-msg">
+      Для работы поиска и отображения карточек необходим JavaScript.
+      Вы можете ознакомиться с официальным первоисточником по ссылке в футере сайта.
+    </div>
+  </noscript>
+
+  <div class="search-container">
+    <div class="searchbar">
+      <input id="q" type="text" autocomplete="off" spellcheck="false" 
+             placeholder="Код (2512, 2512 1) или название: бухгалтер, водитель…" 
+             title="Поиск по коду, КЧ, наименованию">
+      
+      <select id="root-filter" title="Фильтр по основному разделу">
         <option value="">Все разделы</option>
       </select>
     </div>
-    <div class="statusline">
-      <div class="found" id="found">Загрузка…</div>
-      <div class="actions">
-        <button class="clear-all" id="clear-all" type="button" title="Сбросить поиск и фильтр раздела">Очистить</button>
+  </div>
+
+  <div class="meta-line">
+    <div class="count" id="count">Загрузка...</div>
+    <div class="clear-link" id="clear-all" style="display:none" title="Сбросить поиск и фильтры">Очистить поиск</div>
+  </div>
+
+  <!-- Загрузка: спиннер + анимация -->
+  <div id="status">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-text">
+      <span id="loading-text">Загрузка справочника ОКЗ</span><span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>
+    <div class="substatus">Файл ~15 КБ. Обычно 1–2 секунды.</div>
+  </div>
+
+  <div id="results"></div>
+
+  <button class="more" id="more" hidden>Показать ещё</button>
+
+  <footer>
+    <p class="stats" id="footstats">В справочнике 618 записей: 10 основных групп и 4 уровня иерархии.</p>
+    <p class="date-line" id="footdate">Изменение № 1/2021 от 1 марта 2021</p>
+
+    <div class="links">
+      <div id="foot-primary">
+        <div class="row-label">Источник данных (машиночитаемый снимок):</div>
+        <!-- Заполняется через JS -->
+      </div>
+      <div id="foot-secondary">
+        <div class="row-label">Первоисточники и текстовые редакции для сверки:</div>
+        <!-- Заполняется через JS -->
+      </div>
+      <div>
+        <div class="row-label">Экосистема проектов:</div>
+        <a href="https://prog815.github.io/" target="_blank" rel="noopener">Центральный хаб «Классик»</a>
+      </div>
+      <div>
+        <div class="row-label">Обсуждение проекта и обратная связь:</div>
+        <a href="https://m.vk.ru/alekseyenin" target="_blank" rel="me noopener">ВКонтакте</a> ·
+        <a href="https://t.me/AlekseyEnin" target="_blank" rel="me noopener">Telegram</a> ·
+        <a href="https://max.ru/channel_prog815" target="_blank" rel="me noopener">MAX</a> ·
+        <a href="https://www.linkedin.com/in/eavprog/" target="_blank" rel="me noopener">LinkedIn</a>
       </div>
     </div>
-  </div>
+
+    <p class="disc">
+      Справочник носит справочный характер, не заменяет первоисточник и не является официальным реестром. Данные обновляются автоматически раз в неделю.
+    </p>
+  </footer>
 </div>
 
-<main class="wrap">
-  <div id="state">Загрузка данных справочника…</div>
-  <ul id="list" hidden></ul>
-  <div class="more" id="moreWrap" hidden>
-    <button id="more" type="button">Показать ещё</button>
-  </div>
-</main>
-
-<footer>
-  <div class="wrap">
-    <h4>О справочнике</h4>
-    <p class="lead" id="footLead"></p>
-    <p class="date-foot" id="footDate"></p>
-    <div class="links" id="footPrimary">
-      <span class="cap">Источник данных (машиночитаемый снимок):</span>
-    </div>
-    <div class="links" id="footSecondary">
-      <span class="cap">Первоисточники и текстовые редакции для сверки:</span>
-    </div>
-    <p class="disc" id="footDisc"></p>
-  </div>
-</footer>
-
-<div class="fab up"><button id="toTop" type="button" title="Наверх" aria-label="Наверх">↑</button></div>
-<div class="fab down"><button id="toBottom" type="button" title="Вниз" aria-label="Вниз">↓</button></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="fab up" id="fabUp" title="Прокрутить страницу наверх">↑</button>
+<button class="fab down" id="fabDown" title="Прокрутить страницу вниз">↓</button>
+<div class="toast" id="toast">Скопировано</div>
 
 <script>
 (function(){
   "use strict";
 
-  var BASE = location.href.replace(/[^/]*$/,"");
-  var DATA_GZ  = BASE + "okz.json.gz";
-  var DATA_JSON= BASE + "okz.json";
-  var META_GZ  = BASE + "okz_meta.json.gz";
-  var META_JSON= BASE + "okz_meta.json";
-
-  var PAGE_SIZE = 20;
-  var DEBOUNCE_MS = 180;
-  var SCROLL_THRESHOLD = 300;
-  var TOAST_MS = 1800;
-  var HIGHLIGHT_MS = 1800;
-
-  // [code, name, kch, parent, level, isLeaf, root, sourceOrder]
-  var F_CODE=0, F_NAME=1, F_KCH=2, F_LEVEL=4, F_ROOT=6, F_ORDER=7;
+  var PAGE = 20;
+  var DATA = [];
+  var META = null;
+  var activeDeepLinkCode = null;
+  var view = { list: [], shown: 0 };
+  var loadingInterval = null;
 
   var LEVEL_NAMES = {
     "1": "Основная группа",
@@ -312,414 +402,388 @@
     { name: "Кодекс (ОК 010-2014)", url: "https://docs.cntd.ru/document/1200121893", role: "secondary" }
   ];
 
-  // ---------- состояние ----------
-  var RECORDS = [];
-  var BY_CODE = {};
-  var filtered = [];
-  var shown = PAGE_SIZE;
-  var META = null;
-  var activeDeepLinkCode = null;
+  var els = {
+    q: document.getElementById('q'),
+    root: document.getElementById('root-filter'),
+    clearAll: document.getElementById('clear-all'),
+    count: document.getElementById('count'),
+    status: document.getElementById('status'),
+    loadingText: document.getElementById('loading-text'),
+    results: document.getElementById('results'),
+    more: document.getElementById('more'),
+    footstats: document.getElementById('footstats'),
+    footdate: document.getElementById('footdate'),
+    footPrimary: document.getElementById('foot-primary'),
+    footSecondary: document.getElementById('foot-secondary'),
+    fabUp: document.getElementById('fabUp'),
+    fabDown: document.getElementById('fabDown'),
+    toast: document.getElementById('toast')
+  };
 
-  // ---------- dom ----------
-  var $ = function(id){ return document.getElementById(id); };
-  var elState = $("state"), elList = $("list"), elMoreWrap = $("moreWrap"), elMore = $("more");
-  var elQ = $("q"), elClearBtn = $("clear-btn"), elBox = $("searchbox");
-  var elRoot = $("root-filter");
-  var elFound = $("found"), elClearAll = $("clear-all");
-  var elFootLead = $("footLead"), elFootDate = $("footDate");
-  var elFootPrimary = $("footPrimary"), elFootSecondary = $("footSecondary"), elFootDisc = $("footDisc");
-  var elToast = $("toast"), elTop = $("toTop"), elBottom = $("toBottom");
+  var LOADING_PHASES = [
+    'Загрузка справочника ОКЗ',
+    'Распаковка 15 КБ данных',
+    'Подготовка списка занятий'
+  ];
+  var loadingIdx = 0;
 
-  // ---------- утилиты ----------
-  function norm(s){
-    s = String(s==null?"":s).toLowerCase().replace(/ё/g,"е");
-    s = s.replace(/[^a-zа-я0-9]+/g," ");
-    s = s.replace(/\s+/g," ").trim();
-    return s;
+  function startLoadingTicker() {
+    stopLoadingTicker();
+    loadingInterval = setInterval(function(){
+      if (!els.loadingText || !els.loadingText.isConnected) {
+        stopLoadingTicker();
+        return;
+      }
+      loadingIdx = (loadingIdx + 1) % LOADING_PHASES.length;
+      els.loadingText.textContent = LOADING_PHASES[loadingIdx];
+    }, 1500);
   }
-  function escHtml(s){
-    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  function stopLoadingTicker() {
+    if (loadingInterval) {
+      clearInterval(loadingInterval);
+      loadingInterval = null;
+    }
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
-  function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0"); }
-  function plural(n, forms){
-    var n10=n%10, n100=n%100;
-    if(n10===1 && n100!==11) return forms[0];
-    if(n10>=2 && n10<=4 && (n100<10||n100>=20)) return forms[1];
-    return forms[2];
-  }
-  function commonPrefixOk(a,b){
-    var max = Math.min(5, a.length, b.length);
-    if(max < 4) return false;
-    return a.slice(0,max) === b.slice(0,max);
-  }
-  function extractWords(text){
-    var n = norm(text);
-    return n ? n.split(" ").filter(Boolean) : [];
-  }
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function normName(s){ return String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim(); }
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
 
-  // ---------- загрузка ----------
-  async function fetchJson(gzUrl, jsonUrl){
-    try{
-      if (typeof DecompressionStream === "function"){
-        var r = await fetch(gzUrl,{cache:"no-store"});
-        if (r.ok){
-          var ds = new DecompressionStream("gzip");
-          var decompressed = r.body.pipeThrough(ds);
-          var text = await new Response(decompressed).text();
-          return JSON.parse(text);
-        }
-      }
-    }catch(e){}
-    var r2 = await fetch(jsonUrl,{cache:"no-store"});
-    if(!r2.ok) throw new Error("не удалось получить файл, код ответа "+r2.status);
-    return await r2.json();
-  }
-
-  async function loadAll(){
-    elState.hidden=false; elState.className=""; elState.textContent="Загрузка данных справочника…";
-    elList.hidden=true; elList.innerHTML=""; elMoreWrap.hidden=true; elMore.textContent="";
-    elFound.textContent="Загрузка…";
-
-    var data, meta=null;
-    try{
-      data = await fetchJson(DATA_GZ, DATA_JSON);
-    }catch(err){
-      elState.className="error";
-      elState.innerHTML = "Не удалось загрузить данные справочника.<br>"+
-        "<small>"+escHtml(err&&err.message||err)+"</small><br>"+
-        '<button class="retry" id="retryBtn" type="button">Повторить</button>';
-      var rb=$("retryBtn"); if(rb) rb.addEventListener("click", loadAll);
-      return;
+  function highlight(text, tokens) {
+    if (!tokens || !tokens.length || !text) return esc(text);
+    var html = esc(text);
+    var sortedTokens = tokens.slice().sort(function(a,b){ return b.length - a.length; });
+    for (var i=0; i<sortedTokens.length; i++) {
+      var t = sortedTokens[i];
+      if (!t) continue;
+      var re = new RegExp('(' + escRe(esc(t)) + ')', 'gi');
+      html = html.replace(re, '<mark>$1</mark>');
     }
-    try{ meta = await fetchJson(META_GZ, META_JSON); }catch(e){ meta=null; }
-
-    META = meta;
-    initUI();
-    buildIndexes(data);
-    renderFooter();
-    parseUrlAndApply();
+    return html;
   }
 
-  function initUI(){
-    elRoot.innerHTML = '<option value="">Все разделы</option>';
+  async function loadJsonGz(url){
+    var r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    if(typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream не поддерживается браузером');
+    var decompressed = r.body.pipeThrough(new DecompressionStream('gzip'));
+    var text = await new Response(decompressed).text();
+    return JSON.parse(text);
+  }
+
+  function syncCodeToUrl(code) {
+    var url = new URL(window.location);
+    if (code) url.searchParams.set('code', code);
+    else url.searchParams.delete('code');
+    history.replaceState(null, '', url.toString());
+  }
+
+  function clearCodeFromUrl() { syncCodeToUrl(null); }
+
+  function updateClearVisibility() {
+    var hasQuery = String(els.q.value || '').length > 0;
+    var hasCode = !!activeDeepLinkCode;
+    var hasRoot = els.root.value !== '';
+    els.clearAll.style.display = (hasQuery || hasCode || hasRoot) ? 'block' : 'none';
+  }
+
+  function populateRoots() {
     var sections = (META && META.sections) || (META && META.roots) || [];
+    var currentVal = els.root.value;
+    while (els.root.options.length > 1) {
+      els.root.remove(1);
+    }
     sections.forEach(function(s){
       var sec = s.section || s.root;
       var name = s.name || "";
       var count = s.count || 0;
-      var opt = document.createElement("option");
+      var opt = document.createElement('option');
       opt.value = sec;
       var shortName = name.length > 40 ? name.substring(0, 37) + "…" : name;
       opt.textContent = sec + " — " + shortName + " (" + count + ")";
       opt.title = name;
-      elRoot.appendChild(opt);
+      els.root.appendChild(opt);
     });
+    if (currentVal) els.root.value = currentVal;
   }
 
-  // ---------- индексы ----------
-  function buildIndexes(arr){
-    RECORDS = []; BY_CODE = {};
-    if(!Array.isArray(arr)) arr = [];
+  async function boot(){
+    try{
+      startLoadingTicker();
 
-    arr.forEach(function(it){
-      it = it || [];
-      var code = String(it[F_CODE]==null?"":it[F_CODE]).trim();
-      if (!code) return;
-      var name = String(it[F_NAME]==null?"":it[F_NAME]).trim();
-      var kch = String(it[F_KCH]==null?"":it[F_KCH]).trim();
-      var level = String(it[F_LEVEL]==null?"":it[F_LEVEL]).trim();
-      var root = String(it[F_ROOT]==null?"":it[F_ROOT]).trim();
-      var order = parseInt(it[F_ORDER], 10);
-      if (isNaN(order)) order = 0;
+      var base = location.pathname.replace(/index\.html$/, '');
+      if(base.charAt(base.length - 1) !== '/') base += '/';
 
-      var rec = {
-        code: code, name: name, kch: kch, level: level,
-        root: root, sourceOrder: order,
-        nName: norm(name),
-        words: extractWords(name),
-        searchBlob: norm(code + " " + kch + " " + name)
-      };
-      RECORDS.push(rec);
-      BY_CODE[code] = rec;
-    });
+      var raw = await loadJsonGz(base + 'okz.json.gz');
+      META = await loadJsonGz(base + 'okz_meta.json.gz');
 
-    RECORDS.sort(function(a,b){ return a.sourceOrder - b.sourceOrder; });
+      if(!Array.isArray(raw)) throw new Error('bad data shape');
+
+      // [code, name, kch, parent, level, isLeaf, root, sourceOrder]
+      DATA = raw.map(function(it) {
+        var c = String(it[0] || '');
+        var n = String(it[1] || '');
+        var kch = String(it[2] || '');
+        var level = String(it[4] || '');
+        var root = String(it[6] || '');
+        
+        return {
+          c: c,
+          n: n,
+          kch: kch,
+          level: level,
+          root: root,
+          _text: normName(c + ' ' + kch + ' ' + n)
+        };
+      });
+
+      populateRoots();
+      renderFooter();
+
+      stopLoadingTicker();
+      els.status.style.display = 'none';
+
+      var urlParams = new URLSearchParams(window.location.search);
+      var codeParam = urlParams.get('code');
+      var secParam = urlParams.get('section');
+
+      if (secParam) els.root.value = secParam;
+
+      if (codeParam) {
+        var found = DATA.find(function(r) { return r.c === codeParam; });
+        if (found) {
+          activeDeepLinkCode = codeParam;
+          els.q.value = codeParam;
+        } else {
+          els.q.value = codeParam;
+        }
+      }
+
+      runSearch();
+    }catch(err){
+      console.error(err);
+      stopLoadingTicker();
+      els.status.innerHTML = '<div class="err">Не удалось загрузить данные.<br><small>' + esc(err.message) + '</small></div>' +
+        '<div style="margin-top:12px"><button class="action-btn" onclick="location.reload()">Повторить</button></div>';
+    }
   }
 
-  // ---------- разбор кода / КЧ ----------
   function resolveCodeQuery(digits){
     if (!digits) return { code: "", kch: null };
     if (digits.length === 5){
       var codePart = digits.slice(0, 4);
       var kchPart = digits.slice(4);
-      if (BY_CODE[codePart]) return { code: codePart, kch: kchPart };
+      if (DATA.find(function(r){ return r.c === codePart; })) return { code: codePart, kch: kchPart };
     }
     return { code: digits, kch: null };
   }
-  function normalizeCodeInput(raw){
-    var digits = String(raw||"").replace(/[^0-9]/g, "");
-    if (!digits) return "";
-    return resolveCodeQuery(digits).code;
-  }
 
-  // ---------- поиск ----------
-  function prepareQuery(q){
-    var raw = String(q||"");
-    var digits = raw.replace(/[^0-9]/g,"");
-    var n = norm(raw);
-    var tokens = n ? n.split(" ").filter(Boolean) : [];
-    var rawTerms = raw.trim().split(/\s+/).filter(Boolean);
-    return { digits: digits, tokens: tokens, rawTerms: rawTerms, full: tokens.join(" ") };
-  }
-
-  function isCodeOnlyQuery(pq){
-    return pq.rawTerms.length > 0 && pq.rawTerms.every(function(t){
-      return /^[\d\s\.\-;,/]+$/.test(t);
-    });
-  }
-
-  function tokenMatches(token, rec){
-    if(!token) return true;
-    if(rec.searchBlob.indexOf(token) >= 0) return true;
-    var words = rec.words || [];
-    for(var i=0;i<words.length;i++){
-      if(commonPrefixOk(token, words[i])) return true;
-    }
-    return false;
-  }
-
-  function scoreRecord(r, pq){
-    if (activeDeepLinkCode !== null){
-      return r.code === activeDeepLinkCode ? 100 : null;
-    }
-
-    var codeOnly = isCodeOnlyQuery(pq);
-
-    if (codeOnly && pq.digits){
-      var resolved = resolveCodeQuery(pq.digits);
-      if (resolved.code === "") return null;
-      if (r.code === resolved.code) return 100;
-      if (r.code.indexOf(resolved.code) === 0) return 75;
-      return null;
-    }
-
-    var score = 0;
-    if (pq.digits){
-      if (r.code === pq.digits) score += 100;
-      else if (r.code.indexOf(pq.digits) === 0) score += 75;
-    }
-
-    if (pq.tokens.length){
-      for(var ti=0; ti<pq.tokens.length; ti++){
-        if(!tokenMatches(pq.tokens[ti], r)) return null;
-      }
-    }
-
-    if (pq.full){
-      if (r.nName === pq.full) score += 60;
-      else if (r.nName.indexOf(pq.full) === 0) score += 50;
-      else if (r.nName.indexOf(pq.full) >= 0) score += 35;
-    }
-
-    for(var k=0;k<pq.tokens.length;k++){
-      var t = pq.tokens[k];
-      if (r.nName.indexOf(t) >= 0) score += 5;
-    }
-
-    if (score <= 0) return null;
-    return score;
-  }
-
-  function applyFilters(){
-    var pq = prepareQuery(elQ.value);
-    var hasQuery = !!(pq.digits || pq.tokens.length);
-    var rootFilter = elRoot.value;
-
-    var base = RECORDS.filter(function(r){
-      if (rootFilter && r.root !== rootFilter) return false;
-      return true;
-    });
-
-    if (hasQuery || activeDeepLinkCode !== null){
-      var scored = [];
-      for(var a=0;a<base.length;a++){
-        var s = scoreRecord(base[a], pq);
-        if (s !== null) scored.push({ r: base[a], s: s });
-      }
-      scored.sort(function(x,y){
-        if (y.s !== x.s) return y.s - x.s;
-        return x.r.sourceOrder - y.r.sourceOrder;
-      });
-      filtered = scored.map(function(o){ return o.r; });
-    } else {
-      filtered = base;
-    }
-
-    filtered._pq = pq;
-    filtered._hasQuery = hasQuery;
-
-    shown = PAGE_SIZE;
-    renderList();
-  }
-
-  // ---------- рендер ----------
-  function computeHighlightDigits(pq){
-    if (!pq || !pq.digits) return "";
-    if (isCodeOnlyQuery(pq)){
-      return resolveCodeQuery(pq.digits).code;
-    }
-    return pq.digits;
-  }
-
-  function renderList(){
-    var pq = filtered._pq || { digits:"", tokens:[], rawTerms:[], full:"" };
-    var terms = pq.rawTerms || [];
-    var digits = computeHighlightDigits(pq);
-    var total = filtered.length;
-
-    if(total===0){
-      elList.hidden=true; elList.innerHTML="";
-      elState.hidden=false; elState.className="";
-      elState.innerHTML = '<div class="empty">Ничего не найдено. Попробуйте сократить запрос.</div>';
-      elFound.innerHTML = "Найдено: <b>0</b>";
-      elMore.textContent=""; elMoreWrap.hidden=true;
+  function runSearch(){
+    if (activeDeepLinkCode) {
+      var one = DATA.find(function(r){ return r.c === activeDeepLinkCode; });
+      view.list = one ? [one] : [];
+      view.shown = 0;
+      els.results.innerHTML = '';
+      renderCount();
+      renderMore();
+      appendPage();
+      updateClearVisibility();
       return;
     }
 
-    var visible = Math.min(shown, total);
-    elFound.innerHTML = "Найдено: <b>"+fmtNum(total)+"</b> · Показано: <b>"+fmtNum(visible)+"</b>";
+    var rawQuery = els.q.value;
+    var digits = rawQuery.replace(/[^0-9]/g, "");
+    var isCodeOnly = rawQuery.length > 0 && /^[\d\s\.\-;,/]+$/.test(rawQuery);
 
-    elState.hidden=true; elList.hidden=false;
-    var slice = filtered.slice(0, shown);
-    elList.innerHTML = slice.map(function(r){ return cardHtml(r, terms, digits); }).join("");
+    var resolved = isCodeOnly ? resolveCodeQuery(digits) : { code: digits, kch: null };
+    
+    var query = normName(rawQuery);
+    var tokens = query.split(' ').filter(Boolean);
+    var rootVal = els.root.value;
+
+    var pool = DATA;
+
+    if (rootVal) pool = pool.filter(function(r) { return r.root === rootVal; });
+
+    if (isCodeOnly && digits) {
+      pool = pool.filter(function(r) {
+        return r.c === resolved.code || r.c.startsWith(resolved.code);
+      });
+    } else if (tokens.length > 0) {
+      pool = pool.filter(function(r){
+        for(var i=0; i<tokens.length; i++){
+          var t = tokens[i];
+          if (r._text.indexOf(t) === -1) return false;
+        }
+        return true;
+      });
+    }
+
+    pool.sort(function(a, b) {
+      if (isCodeOnly && digits) {
+        var aExact = (a.c === resolved.code) ? 1 : 0;
+        var bExact = (b.c === resolved.code) ? 1 : 0;
+        if (aExact !== bExact) return bExact - aExact;
+      }
+      return a.c.localeCompare(b.c, 'ru', { numeric: true });
+    });
+
+    view.list = pool;
+    view.shown = 0;
+    els.results.innerHTML = '';
+    renderCount();
+    renderMore();
+    appendPage();
+    updateClearVisibility();
+  }
+
+  function renderCount(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    els.count.innerHTML = 'Найдено: <b>' + fmt(total) + '</b> · Показано: <b>' + fmt(shown) + '</b>';
+  }
+
+  function renderMore(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    if(shown >= total || total === 0){
+      els.more.hidden = true;
+    } else {
+      els.more.hidden = false;
+      els.more.textContent = 'Показать ещё +' + PAGE + ' (показано ' + fmt(shown) + ' из ' + fmt(total) + ')';
+    }
+  }
+
+  function appendPage(){
+    var total = view.list.length;
+    if(total === 0){
+      if (activeDeepLinkCode) {
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Код не найден. Возможно, запись удалена из реестра.<br><br>Нажмите «Очистить поиск», чтобы увидеть весь реестр.</div>';
+      } else {
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Ничего не найдено. Попробуйте изменить запрос или сбросить фильтры.</div>';
+      }
+      renderCount(); renderMore(); return;
+    }
+
+    var end = Math.min(view.shown + PAGE, total);
+    var html = [];
+    var queryTokens = normName(els.q.value).split(' ').filter(Boolean);
+
+    for(var i=view.shown; i<end; i++){
+      html.push(cardHTML(view.list[i], queryTokens));
+    }
+    els.results.insertAdjacentHTML('beforeend', html.join(''));
+
     bindShareButtons();
 
-    if(visible < total){
-      var next = Math.min(shown+PAGE_SIZE, total);
-      elMore.textContent = "Показать ещё +"+fmtNum(next-visible)+" (показано "+fmtNum(visible)+" из "+fmtNum(total)+")";
-      elMore.disabled=false;
-      elMoreWrap.hidden=false;
-    }else{
-      elMore.textContent="";
-      elMoreWrap.hidden=true;
+    view.shown = end;
+    renderCount();
+    renderMore();
+  }
+
+  function getShareText(r, url) {
+    var lines = [r.c + (r.kch ? ' ' + r.kch : '') + ' — ' + r.n];
+    if (r.root) {
+      var rootName = (META && META.sections) ? (META.sections.find(function(s){ return s.section === r.root; }) || {}).name : '';
+      lines.push('Раздел: ' + r.root + (rootName ? ' (' + rootName + ')' : ''));
     }
-  }
-
-  // ---------- подсветка ----------
-  function hlText(text, rawTerms){
-    var safe = escHtml(text);
-    if(!rawTerms || !rawTerms.length) return safe;
-    try{
-      var re = new RegExp("("+rawTerms.map(escRe).join("|")+")","gi");
-      return safe.replace(re,"<mark>$1</mark>");
-    }catch(e){ return safe; }
-  }
-  function hlCode(code, digits){
-    var safe = escHtml(code);
-    if(!digits) return safe;
-    if(code.indexOf(digits) === 0){
-      return "<mark>"+escHtml(digits)+"</mark>"+escHtml(code.slice(digits.length));
+    if (r.level) {
+      lines.push('Уровень: ' + r.level + ' (' + (LEVEL_NAMES[r.level] || 'Группа') + ')');
     }
-    if(code.indexOf(digits) >= 0){
-      try{
-        return safe.replace(new RegExp("("+escRe(digits)+")"),"<mark>$1</mark>");
-      }catch(e){ return safe; }
-    }
-    return safe;
+    lines.push('Ссылка: ' + url);
+    return lines.join('\n');
   }
 
-  // ---------- карточка ----------
-  function buildRowText(rec){
-    return rec.code + (rec.kch ? " " + rec.kch : "") + "; " + rec.name;
-  }
-
-  function cardHtml(rec, terms, digits){
-    var kchHtml = rec.kch
-      ? '<button type="button" class="kch-badge" data-act="copy-kch" data-val="'+escHtml(rec.kch)+'" title="Контрольное число: '+escHtml(rec.kch)+' — клик, чтобы скопировать">КЧ '+escHtml(rec.kch)+'</button>'
-      : '';
-
-    var lvlName = LEVEL_NAMES[rec.level] || "Группа";
-    var lvlHtml = '<span class="badge-lvl" title="Уровень '+rec.level+' — '+escHtml(lvlName)+'">'+rec.level+' · '+escHtml(lvlName)+'</span>';
-
-    var rootData = (META && META.sections) ? META.sections.find(function(s){ return s.section === rec.root; }) : null;
-    var rootHtml = "";
-    if (rootData){
-      var shortName = rootData.name.split(" ")[0];
-      rootHtml = '<button type="button" class="badge-root" data-act="filter-root" data-val="'+escHtml(rec.root)+'" title="Показать только раздел: '+escHtml(rootData.name)+'">§'+escHtml(rec.root)+' '+escHtml(shortName)+'</button>';
-    }
-
-    var rowText = buildRowText(rec);
-
-    return '<li>' +
-      '<article class="card lvl-'+escHtml(rec.level)+'" data-code="'+escHtml(rec.code)+'">' +
-        '<div class="card-top">' +
-          '<button type="button" class="code" data-act="copy-code" data-val="'+escHtml(rec.code)+'" title="Копировать код: '+escHtml(rec.code)+'">'+hlCode(rec.code, digits)+'</button>' +
-          kchHtml +
-          lvlHtml +
-          rootHtml +
-          '<button type="button" class="copy-full" data-act="copy-full" data-val="'+escHtml(rowText)+'" title="Скопировать строку: '+escHtml(rowText)+'">📋 строка</button>' +
-        '</div>' +
-        '<div class="name">'+hlText(rec.name, terms)+'</div>' +
-        '<div class="card-actions">' +
-          '<span class="share-slot" data-code="'+escHtml(rec.code)+'"></span>' +
-        '</div>' +
-      '</article>' +
-    '</li>';
-  }
-
-  // ---------- share ----------
-  function bindShareButtons(){
-    if (!window.customElements || !customElements.get("klassik-share")){
+  function bindShareButtons() {
+    if (!window.customElements || !customElements.get('klassik-share')) {
       return;
     }
-    var slots = document.querySelectorAll(".share-slot");
-    for (var i=0;i<slots.length;i++){
-      var slot = slots[i];
-      var code = slot.dataset.code;
-      var rec = BY_CODE[code];
-      if (!rec) continue;
+    var slots = els.results.querySelectorAll('.share-slot');
+    for (var j=0; j<slots.length; j++) {
+      var fallback = slots[j].querySelector('.btn-share-fallback');
+      if (!fallback) continue;
 
-      var wrap = document.createElement("klassik-share");
-      wrap.setAttribute("catalog", "okz");
-      wrap.setAttribute("title", "ОКЗ: " + rec.code + " — " + rec.name);
-      wrap.setAttribute("text", buildRowText(rec));
-      wrap.setAttribute("url", location.origin + location.pathname + "?code=" + encodeURIComponent(rec.code));
+      var code = slots[j].getAttribute('data-code');
+      var nameText = slots[j].getAttribute('data-name');
+      var url = window.location.origin + window.location.pathname + '?code=' + code;
+      var r = DATA.find(function(x){ return x.c === code; });
+      var fullText = r ? getShareText(r, url) : (nameText + '\n' + url);
 
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "btn-small";
-      btn.textContent = "📤 Поделиться";
-      btn.title = "Поделиться карточкой: " + rec.code + " — " + rec.name;
-      wrap.appendChild(btn);
+      var el = document.createElement('klassik-share');
+      el.setAttribute('catalog', 'okz');
+      el.setAttribute('title', 'ОКЗ: ' + code + ' — ' + nameText);
+      el.setAttribute('text', fullText);
+      el.setAttribute('url', ''); 
 
-      slot.parentNode.replaceChild(wrap, slot);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'action-btn';
+      btn.title = 'Поделиться этой записью';
+      btn.setAttribute('aria-label', 'Поделиться записью');
+      btn.textContent = '📤 Поделиться';
+
+      el.appendChild(btn);
+      slots[j].replaceChild(el, fallback);
     }
   }
 
-  // ---------- футер ----------
+  if (window.customElements) {
+    customElements.whenDefined('klassik-share').then(bindShareButtons);
+  }
+
+  function cardHTML(r, queryTokens){
+    var isHighlight = (r.c === activeDeepLinkCode);
+    
+    var titleHtml = highlight(r.n, queryTokens);
+
+    var kchHtml = r.kch 
+      ? '<button type="button" class="kch-badge" data-copy="' + r.kch + '" title="Скопировать КЧ">КЧ ' + r.kch + '</button>'
+      : '';
+
+    var badgesHtml = '';
+    if (r.level) {
+      badgesHtml += '<span class="badge lvl">' + r.level + ' · ' + (LEVEL_NAMES[r.level] || 'Группа') + '</span>';
+    }
+    if (r.root) {
+      var rootName = (META && META.sections) ? (META.sections.find(function(s){ return s.section === r.root; }) || {}).name : '';
+      var shortName = rootName ? rootName.split(' ')[0] : '';
+      badgesHtml += '<span class="badge root clickable" data-root="' + r.root + '" title="Показать только раздел: ' + esc(rootName) + '">§' + r.root + ' ' + esc(shortName) + '</span>';
+    }
+
+    return '<article class="card lvl-' + (r.level || '1') + (isHighlight ? ' highlight' : '') + '" title="Карточка: ' + esc(r.n) + '">' +
+      '<div class="row1">' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
+          '<button type="button" class="code-btn" data-copy="' + r.c + '" data-code="' + r.c + '" title="Скопировать код">' + highlight(r.c, queryTokens) + '</button>' +
+          kchHtml +
+        '</div>' +
+        '<div class="badges">' + badgesHtml + '</div>' +
+      '</div>' +
+      '<div class="name">' + titleHtml + '</div>' +
+      '<div class="actions">' +
+        '<div class="share-slot" data-code="' + r.c + '" data-name="' + esc(r.n) + '">' +
+          '<button type="button" class="action-btn btn-share-fallback" data-code="' + r.c + '" data-name="' + esc(r.n) + '" title="Поделиться этой записью" aria-label="Поделиться записью">📤 Поделиться</button>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
   function renderFooter(){
-    var total = RECORDS.length;
-    var sections = (META && META.sections) || [];
-    var rootsCount = sections.length || 10;
+    var total = DATA.length;
+    var sectionsCount = (META && META.sections) ? META.sections.length : 10;
     var levelsCount = (META && META.levels_count) ? Object.keys(META.levels_count).length : 4;
 
-    var s = "В справочнике <b>"+fmtNum(total)+"</b> "+plural(total, ["запись","записи","записей"])+
-            ", <b>"+rootsCount+"</b> "+plural(rootsCount, ["основная группа","основные группы","основных групп"])+
-            " и <b>"+levelsCount+"</b> "+plural(levelsCount, ["уровень","уровня","уровней"])+" иерархии.";
-    elFootLead.innerHTML = s;
-
-    if (META && META.change_display){
-      elFootDate.textContent = META.change_display;
-    } else if (META && META.source_date_display){
-      elFootDate.textContent = "Снимок от " + META.source_date_display;
+    els.footstats.innerHTML = 'В справочнике <b>' + fmt(total) + '</b> записей: ' + sectionsCount + ' основных групп и ' + levelsCount + ' уровня иерархии.';
+    if (META && META.change_display) {
+      els.footdate.textContent = META.change_display;
+    } else if (META && META.source_date_display) {
+      els.footdate.textContent = 'Снимок от ' + META.source_date_display;
     } else {
-      elFootDate.textContent = "Дата актуальности: не определена";
-    }
-    if (META && META.standard_line){
-      elFootDate.title = META.standard_line;
+      els.footdate.textContent = 'Дата актуальности: не определена';
     }
 
     var sources = DEFAULT_PRIMARY_SOURCES.slice();
@@ -749,189 +813,171 @@
       return true;
     });
 
-    elFootPrimary.innerHTML = '<span class="cap">Источник данных (машиночитаемый снимок):</span>' +
+    els.footPrimary.innerHTML = '<div class="row-label">Источник данных (машиночитаемый снимок):</div>' +
       primaryList.map(function(s){
-        return '<a href="'+escHtml(s.url)+'" rel="noopener" target="_blank">'+escHtml(s.name)+'</a>';
+        return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
       }).join(" ");
 
     var secHtml = secondaryList.map(function(s){
-      return '<a href="'+escHtml(s.url)+'" rel="noopener" target="_blank">'+escHtml(s.name)+'</a>';
+      return '<a href="' + esc(s.url) + '" rel="noopener" target="_blank">' + esc(s.name) + '</a>';
     }).join(" ");
     secHtml += ' <a href="https://github.com/prog815/okz" rel="noopener" target="_blank">О справочнике</a>';
-    elFootSecondary.innerHTML = '<span class="cap">Первоисточники и текстовые редакции для сверки:</span>' + secHtml;
-
-    var disc = (META && META.disclaimer) ? META.disclaimer
-      : "Материалы носят справочный характер и не являются точными копиями официальных документов. Перед применением в официальных документах сверяйте по первоисточнику.";
-    elFootDisc.textContent = disc;
+    
+    els.footSecondary.innerHTML = '<div class="row-label">Первоисточники и текстовые редакции для сверки:</div>' + secHtml;
   }
 
-  // ---------- навигация / deep-link ----------
-  function focusCode(code){
-    setTimeout(function(){
-      var el = document.querySelector('article.card[data-code="'+code.replace(/"/g,'\\"')+'"]');
-      if(!el) return;
-      document.querySelectorAll(".card.highlight").forEach(function(node){ node.classList.remove("highlight"); });
-      el.classList.add("highlight");
-      el.scrollIntoView({behavior:"smooth", block:"center"});
-      setTimeout(function(){ el.classList.remove("highlight"); }, HIGHLIGHT_MS);
-    }, 30);
-  }
-
-  function syncCodeToUrl(code){
-    var sp = new URLSearchParams(location.search);
-    sp.set("code", normalizeCodeInput(code));
-    var qs = sp.toString();
-    try{ history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); }catch(e){}
-  }
-
-  function clearCodeFromUrl(){
-    var sp = new URLSearchParams(location.search);
-    sp.delete("code");
-    var qs = sp.toString();
-    try{ history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); }catch(e){}
-  }
-
-  function syncUrl(){
-    var sp = new URLSearchParams();
-    var root = elRoot.value; if (root) sp.set("section", root);
-    var qs = sp.toString();
-    try{ history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); }catch(e){}
-  }
-
-  function parseUrlAndApply(){
-    var sp = new URLSearchParams(location.search);
-    var code = sp.get("code") || "";
-    var section = sp.get("section") || "";
-
-    elRoot.value = section;
-
-    var normalized = code ? normalizeCodeInput(code) : "";
-    activeDeepLinkCode = normalized ? normalized : null;
-    elQ.value = normalized ? normalized : "";
-    syncClear();
-
-    applyFilters();
-
-    if (activeDeepLinkCode){
-      focusCode(activeDeepLinkCode);
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
     }
+    return new Promise(function(resolve, reject){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject();
+      } catch (e) { reject(e); }
+    });
   }
 
-  // ---------- копирование + тост ----------
-  var toastTimer = null;
-  function toast(msg){
-    elToast.textContent = msg;
-    elToast.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ elToast.classList.remove("show"); }, TOAST_MS);
-  }
-  async function copyText(text, label){
-    if(!text) return false;
-    try{
-      if (navigator.clipboard && navigator.clipboard.writeText){
-        await navigator.clipboard.writeText(text);
-        if (label) toast(label);
-        return true;
-      }
-    }catch(e){}
-    try{
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "absolute";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      var ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-      if (ok){
-        if (label) toast(label);
-        return true;
-      }
-    }catch(e){}
-    return false;
+  var debTimer = null;
+  els.q.addEventListener('input', function(){
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    clearTimeout(debTimer);
+    debTimer = setTimeout(runSearch, 180);
+  });
+
+  els.root.addEventListener('change', function() {
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    var url = new URL(window.location);
+    if (els.root.value) url.searchParams.set('section', els.root.value);
+    else url.searchParams.delete('section');
+    history.replaceState(null, '', url.toString());
+    runSearch();
+  });
+
+  function resetAllAction() {
+    els.q.value = '';
+    els.root.value = '';
+    activeDeepLinkCode = null;
+    var url = new URL(window.location);
+    url.searchParams.delete('code');
+    url.searchParams.delete('section');
+    history.replaceState(null, '', url.toString());
+    runSearch();
+    els.q.focus();
   }
 
-  // ---------- обработчики ----------
-  function onListClick(e){
-    var btn = e.target.closest("[data-act]");
-    if(!btn) return;
-    var act = btn.dataset.act, val = btn.dataset.val;
+  els.clearAll.addEventListener('click', resetAllAction);
+  
+  els.more.addEventListener('click', appendPage);
 
-    if (act === "copy-code"){
-      copyText(val, "Код " + val + " скопирован");
-      activeDeepLinkCode = val;
-      syncCodeToUrl(val);
-    }
-    else if (act === "copy-kch"){
-      copyText(val, "КЧ " + val + " скопировано");
-    }
-    else if (act === "copy-full"){
-      copyText(val, "Строка скопирована");
-    }
-    else if (act === "filter-root"){
-      elRoot.value = val;
+  els.results.addEventListener('click', function(ev){
+    var target = ev.target;
+
+    var badgeRoot = target.closest('.badge.root');
+    if (badgeRoot) {
+      els.root.value = badgeRoot.getAttribute('data-root');
       activeDeepLinkCode = null;
-      applyFilters();
-      syncUrl();
-      window.scrollTo({top:0, behavior:"smooth"});
+      var url = new URL(window.location);
+      url.searchParams.delete('code');
+      url.searchParams.set('section', els.root.value);
+      history.replaceState(null, '', url.toString());
+      runSearch();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
-  }
 
-  // ---------- события ----------
-  function syncClear(){ elBox.classList.toggle("has-val", !!elQ.value); }
-
-  var deb = null;
-  function onInput(){
-    syncClear();
-    activeDeepLinkCode = null;
-    if (elQ.value){
-      clearCodeFromUrl();
+    var codeBtn = target.closest('.code-btn');
+    if (codeBtn) {
+      var c = codeBtn.getAttribute('data-code');
+      copyText(c).then(function(){
+        showToast('Код ' + c + ' скопирован');
+      }).catch(function(){
+        showToast('Не удалось скопировать');
+      });
+      syncCodeToUrl(c);
+      return;
     }
-    clearTimeout(deb);
-    deb = setTimeout(function(){ applyFilters(); }, DEBOUNCE_MS);
+
+    var kchBtn = target.closest('.kch-badge');
+    if (kchBtn) {
+      var k = kchBtn.getAttribute('data-copy');
+      copyText(k).then(function(){
+        showToast('КЧ ' + k + ' скопировано');
+      }).catch(function(){
+        showToast('Не удалось скопировать');
+      });
+      return;
+    }
+
+    var btnShare = target.closest('.btn-share-fallback');
+    if(btnShare) {
+      var code = btnShare.getAttribute('data-code');
+      var name = btnShare.getAttribute('data-name');
+      var url = window.location.origin + window.location.pathname + '?code=' + code;
+      var r = DATA.find(function(x){ return x.c === code; });
+      var shareText = r ? getShareText(r, url) : (name + '\n' + url);
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'ОКЗ: ' + code + ' — ' + name,
+          text: shareText
+        }).catch(console.error);
+      } else {
+        copyText(shareText).then(function(){
+          showToast('Сообщение скопировано');
+        });
+      }
+      return;
+    }
+  });
+
+  var toastTimer = null;
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ els.toast.classList.remove('show'); }, 1800);
   }
-
-  elQ.addEventListener("input", onInput);
-  elClearBtn.addEventListener("click", function(){
-    elQ.value = "";
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    syncClear();
-    applyFilters();
-    elQ.focus();
-  });
-  elRoot.addEventListener("change", function(){ activeDeepLinkCode = null; applyFilters(); syncUrl(); });
-  elMore.addEventListener("click", function(){ shown += PAGE_SIZE; renderList(); });
-  elList.addEventListener("click", onListClick);
-
-  elClearAll.addEventListener("click", function(){
-    elQ.value = "";
-    elRoot.value = "";
-    activeDeepLinkCode = null;
-    clearCodeFromUrl();
-    syncClear();
-    applyFilters();
-    syncUrl();
-    window.scrollTo({top:0, behavior:"smooth"});
-  });
-
-  window.addEventListener("popstate", function(){ parseUrlAndApply(); });
 
   function onScroll(){
-    var y = window.scrollY || document.documentElement.scrollTop || 0;
-    var docH = document.documentElement.scrollHeight;
-    var winH = window.innerHeight;
-    elTop.style.display = (y > SCROLL_THRESHOLD) ? "block" : "none";
-    elBottom.style.display = (y > SCROLL_THRESHOLD && (y + winH) < (docH - 40)) ? "block" : "none";
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    els.fabUp.classList.toggle('show', y > 300);
+    els.fabDown.classList.toggle('show', y > 300 && y < max - 40);
   }
-  window.addEventListener("scroll", onScroll, {passive:true});
-  window.addEventListener("resize", onScroll);
-  elTop.addEventListener("click", function(){ window.scrollTo({top:0, behavior:"smooth"}); });
-  elBottom.addEventListener("click", function(){ window.scrollTo({top:document.documentElement.scrollHeight, behavior:"smooth"}); });
 
-  syncClear();
-  loadAll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  els.fabUp.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  els.fabDown.addEventListener('click', function(){ window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
+
+  window.addEventListener('popstate', function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var codeParam = urlParams.get('code');
+    var secParam = urlParams.get('section');
+
+    if (secParam) els.root.value = secParam;
+    else els.root.value = '';
+
+    if (codeParam) {
+      activeDeepLinkCode = codeParam;
+      els.q.value = codeParam;
+    } else {
+      activeDeepLinkCode = null;
+      els.q.value = '';
+    }
+    runSearch();
+  });
+
+  boot();
 })();
 </script>
 </body>
